@@ -1,0 +1,54 @@
+you can also use service provider , but for my convience im using library else you can use service provider folder
+anything class under app/... will be loaded autmatically PSr4
+
+we created command to insert the new api to db via the eloquentORM by creating cmd and the cmd creates new php file 
+and we do insertion to db function with that
+
+
+
+/ORM queying mehtods
+Code
+
+$users = User::where('status', 'active')
+             ->where('age', '>', 30)
+             ->get();
+This query retrieves users who are both 'active' AND older than 30.
+2. Using an array for multiple where conditions:
+You can pass an array of conditions to a single where method. Each inner array represents a condition, and these are also implicitly joined by "AND".
+Code
+
+$users = User::where([
+    ['status', 'active'],
+    ['age', '>', 30]
+])->get();
+This achieves the same result as chaining where clauses.
+3. Combining where and orWhere (OR conditions):
+To introduce "OR" conditions, use the orWhere method.
+Code
+
+$users = User::where('status', 'active')
+             ->orWhere('role', 'admin')
+             ->get();
+This retrieves users who are either 'active' OR have the 'admin' role.
+4. Grouping conditions with Closures (Parentheses):
+For more complex combinations of "AND" and "OR" conditions, use closures within the where method. This allows you to group conditions, similar to using parentheses in SQL.
+Code
+
+$users = User::where('status', 'active')
+             ->where(function ($query) {
+                 $query->where('city', 'London')
+                       ->orWhere('city', 'Paris');
+             })
+             ->get();
+This query retrieves active users who are located in either London OR Paris.
+5. Using whereIn, whereNotIn, whereBetween, whereNotBetween, etc.:
+Laravel offers specialized methods for common filtering scenarios, which can also be combined with other where clauses.
+Code
+
+$users = User::whereIn('role', ['editor', 'author'])
+             ->whereBetween('age', [20, 40])
+             ->get();
+
+
+
+redis prefix format - appname:users:verification:OTP

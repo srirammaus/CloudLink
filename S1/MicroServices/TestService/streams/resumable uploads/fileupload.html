@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!-- Request chunking -->
+<html>
+<head>
+    <title>File Upload</title>
+</head>
+<body>
+   
+    <input type="file" name="fileToUpload" id="fileToUpload">
+    <button onclick="filehandler()">Click me</button>
+     <pre id="log"></pre>
+    <script>
+        async function filehandler () {
+            var file = document.getElementById('fileToUpload').files[0];
+            var chunkSize = 1024 * 1024;
+            var totalChunks = Math.ceil(file.size/chunkSize);
+            current_chunk = 0;
+            for(start = 0;start < file.size;start +=chunkSize) {
+                var chunk =  file.slice(start,start+chunkSize);
+                var formData = new FormData();
+                formData.append("chunk",chunk);
+                formData.append("totalChunks",totalChunks);
+                formData.append("chunkIndex",current_chunk);
+                formData.append("fileName","temp");
+                await fetch ("videoupload.php",{
+                    method:"POST",
+                    body: formData,
+                }).then(r => r.text()).then(txt => document.getElementById("log").textContent += txt + "\n");
+                current_chunk++;
+            }
+        }
+    </script>
+</body>
+</html>

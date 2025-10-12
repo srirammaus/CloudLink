@@ -1,0 +1,2 @@
+redis.dll downloaded exteranlly 
+for captcha externall fonts downloaded locally

@@ -1,0 +1,3 @@
+s1  - Php Server
+s2  - Python Server (IOT)
+s3  - Python Server (chatbot)

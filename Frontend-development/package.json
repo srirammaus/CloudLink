@@ -1,0 +1,14 @@
+{
+  "name": "cloudlink-development",
+  "version": "1.0.0",
+  "description": "development server for cloudlink, right now not planned this for production",
+  "main": "CloudLink.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sriram mariappan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

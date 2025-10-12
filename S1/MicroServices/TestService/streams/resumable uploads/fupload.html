@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chunked Upload Demo</title>
+</head>
+<body>
+  <h2>Upload File in Chunks</h2>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Upload</button>
+  <pre id="log"></pre>
+
+  <script>
+    async function uploadFile() {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("Choose a file first!");
+
+      const chunkSize = 1024 * 1024; // 1 MB
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      let currentChunk = 0;
+
+      for (let start = 0; start < file.size; start += chunkSize) {
+        const chunk = file.slice(start, start + chunkSize);
+        const formData = new FormData();
+        formData.append("chunk", chunk);
+        formData.append("fileName", file.name);
+        formData.append("chunkIndex", currentChunk);
+        formData.append("totalChunks", totalChunks);
+
+        await fetch("vupload.php", { method: "POST", body: formData })
+          .then(r => r.text())
+          .then(txt => document.getElementById("log").textContent += txt + "\n");
+
+        currentChunk++;
+      }
+
+      alert("Upload completed!");
+    }
+  </script>
+</body>
+</html>

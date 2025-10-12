@@ -1,0 +1,26 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Download demo</title>
+</head>
+<body>
+  <h2>Download examples</h2>
+
+  <!-- Direct file link (if file is publicly accessible under /files/) -->
+  <a href="http://localhost:8084/streams/resumable%20downlaod/files/example.iso" download>Download example.pdf (direct)</a>
+  <br><br>
+
+  <!-- PHP-served download (goes through download.php for control / logging / security) -->
+  <a href="http://localhost:8084/streams/resumable%20downlaod/readfiledownload.php?file=example.iso">Download example.pdf (via PHP)</a>
+
+    <!-- resumable ,you can also use first method (driect link)
+      which also resumable which the work complemetly carried by the web server 
+      , her we manually contaoll the stufss,you can use
+     this for auth or anything or processing-->
+     <!-- curl -v -r 0-999 http://localhost:8084/streams/resumable%20downlaod/resumabledownload.php?file=example.iso -o part1.iso -->
+  <a href="http://localhost:8084/streams/resumable%20downlaod/resumabledownload.php?file=example.iso">Download example.pdf (via PHP)</a>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+┌────────────────────────────────────────── Top Header ───────────────────────────────────────────┐
+|  🏠 Smart IoT Weather Lab                         🔍 [Search...]              👤 Profile ▼       |
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────── Sidebar ─────────────┐┌────────────── Content Area ──────────────┐
+| 📊 Dashboard Overview            |│                                           │
+| 🌡️ My Device Data               |│      (Content changes based on nav)       │
+     Device settings
+|    				    |│                                           │
+	TOOLS									
+     combined weather data
+| 📈 Forecasting Tool              |└───────────────────────────────────────────┘
+    Object -detection
+    AI bot
+|  📚 Logs / History                |
+|                     |
+└──────────────────────────────────┘
+ 

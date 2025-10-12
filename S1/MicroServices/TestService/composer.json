@@ -1,0 +1,7 @@
+{
+    "require": {
+        "aura/autoload": "^2.0",
+        "ankitpokhrel/tus-php": "^2.3",
+        "firebase/php-jwt": "^6.11"
+    }
+}

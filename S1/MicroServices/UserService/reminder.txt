@@ -1,0 +1,38 @@
+
+HD- half done
+D- done
+time management -D
+
+enhacing the vuger word check with escaping string
+
+Email Service func in signup lib - Event 
+phone Service func in signup lib - Event
+
+cache lib redis -D
+
+configure session_start() with redis or memecached becuase if you haaving multiple container , each container is each webserver, 
+so if one request reach container A and another request racher conatiner b then they need shared db redis
+
+learn about woroker /thread which are responsibel for multiple incoming request handlerd by single wb server
+
+
+why cookies ? how they tracking
+
+
+integrate grepactha in signin later because we gonna do it in react frontend so build it together
+
+what if the user give different timezon in  - D 
+
+update the logging format
+
+add pdo exeption everywhere - D
+
+create  a EVent scheduler in MYsql to expire the reset token 
+
+update pwd in reset pwd same should be follwed in udatepwb.lib
+
+del the string in redis after use in verification lib
+
+rremove the unwanted email token and phone otp cooulmn from the users db 
+
+kafka python script -- available in desktop notepad filez

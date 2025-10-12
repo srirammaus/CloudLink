@@ -1,0 +1,21 @@
+# Ignore environment files
+*.env
+
+# Ignore log files
+*.log
+error_log/*.log
+
+# Ignore PDF files
+*.pdf
+
+# Ignore all vendor folders recursively
+vendor/
+
+# Ignore all resources folders recursively
+resources/
+
+# Ignore uploads folder at specific location
+/S1/MicroServices/TestService/uploads/
+
+# Ignore specific stream folder (handle spaces properly)
+streams/resumable\ downlaod/files/

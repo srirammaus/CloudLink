@@ -1,0 +1,2 @@
+This region is for ReactJS  files. nodejs is used to serve files till PHP developement complete. So nodejs is server
+Then "npm run build" we build the reactjs files in static in put the files into S1/public
