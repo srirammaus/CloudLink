@@ -28,19 +28,20 @@ class genLib {
         $coord_ = [];
         $count = 0;
         foreach ($coord_list as $key => $coord) {
-    
             if($coord == NULL){
                 return false;
             }
-            $coord = (float)$coord; 
+            $floated_coord = (float)$coord; 
 
-            if(is_float($coord)){
-                if($coord >= -90.0 && $coord <= 90.0 && $count == 0 && $key == "latitude") { //lat
-                    $coord_[] = $coord;
-                }elseif ( $coord >= -180.0 && $coord <= 180.0 && $count == 1 && $key == "longitude") { //long
-                    $coord_[] = $coord;
+            if(is_float($floated_coord)){
+                if($floated_coord >= -90.0 && $floated_coord <= 90.0 && $count == 0 && $key == "latitude") { //lat
+
+                    $coord_[$key] = $floated_coord;
+                }elseif ( $floated_coord >= -180.0 && $floated_coord <= 180.0 && $count == 1 && $key == "longitude") { //long
+
+                    $coord_[$key] = $floated_coord;
                 }else {
-                    echo "Happen one time";
+                    $coord_[$key] = $coord;
                     break; //break if other string character like location start entering
                 }
 

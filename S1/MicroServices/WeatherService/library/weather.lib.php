@@ -21,6 +21,7 @@ class weather {
     public $period_parameters = ["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","temperature_80m","temperature_120m","temperature_180m","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_speed_80m","wind_speed_120m","wind_speed_180m","wind_direction_10m","wind_direction_80m","wind_direction_120m","wind_direction_180m","wind_gusts_10m"];
     public $client_location_data=[];
     public $response_stack=[];
+    public $something;
 
     public $data_types = [
             'application/json',
@@ -32,7 +33,8 @@ class weather {
     public function __construct () {
 
     }
-     public function getConn () {
+  
+    public function getConn () {
         $conn = new \db\db_conn;
         return $conn->conn();
     }
@@ -45,12 +47,14 @@ class weather {
 
     }
     public function setCoordinates ($request) :void {
-        $this->client_location_data["lat"] = (string)$request["lat"];
-        $this->client_location_data["lng"] = (string)$request["lng"];
+        $this->client_location_data["lat"] = (string)$request["latitude"];
+        $this->client_location_data["lng"] = (string)$request["longitude"];
         $this->client_location_data["location"] = (string)$request["location"] ?? NULL;
-        $this->client_location_data;
-        return;
     }
+    public function setsomething() {
+        $this->something ="admin";
+    }
+
     /**
      * 
      * Return the coordinates of client requested
@@ -178,7 +182,9 @@ class weather {
         
         $baseURL = $_ENV["WEATHER_API_BASE_URL"];
         $path = $_ENV["WEATHER_API_PATH"];
+    
         $coords = $this->getCoordinates();
+        var_dump($coords);
         $query = http_build_query([
             'latitude'  => $coords['lat'],
             'longitude' => $coords['lng'],
@@ -194,6 +200,8 @@ class weather {
                 $response = $response->getBody();
                 $resp = $response->getContents();
                 return $resp;
+            }else {
+                return false;
             }
         }catch(\GuzzleHttp\Exception\ClientException $e){
             $response = $this->guzzleErr($e);
@@ -364,6 +372,19 @@ class weather {
 
 
     }
+    public function getFromCache ($lat,$lng) {
+        try {
+            $lat = (string) $lat;
+            $lng = (string) $lng;
+            $key =  $lat .",". $lng;
+            $cache =  new \utils\cachelib();
+            return $cache->getStringCache($key,PREFIX);
+        }catch(\Throwable $e) {
+            logg(file:"server_err",message: $e->getMessage());
+            return false;
+        }
+
+    }
     public function delCache ($lat,$lng) {
         try{
             $lat = (string) $lat;
@@ -401,14 +422,14 @@ class weather {
 }
 
 
-$w = new weather();
-$top_cities = $w->get_default_top_cities();
+// $w = new weather();
+// $top_cities = $w->get_default_top_cities();
 // var_dump($top_cities);
-$nearby_top_cities = $w->get_nearby_top_cities($location = "Tenkasi");
+// $nearby_top_cities = $w->get_nearby_top_cities($location = "Tenkasi");
 // var_dump( $nearby_top_cities );
-$lat = 12.9716;
-$lng = 77.5946;
-$calc_nearby_coordinates = $w->find_nearby_location_coordinates($lat, $lng);
+// $lat = 12.9716;
+// $lng = 77.5946;
+// $calc_nearby_coordinates = $w->find_nearby_location_coordinates($lat, $lng);
 /**| # | Latitude | Longitude |
 $lat = 12.9716; use this as example that is MG road banglore
 $lng = 77.5946;
@@ -427,19 +448,19 @@ $lng = 77.5946;
 
  */
 // var_dump( $calc_nearby_coordinates );
-$request = [];
-$request["lat"] = 12.9716;
-$request["lng"] = 77.5946;
-$request["location"] = "Banglore"; //can be null? and in front end it shoudl try fetch with coordinates details if fails no probelm
-$w->setCoordinates($request);
+// $request = [];
+// $request["lat"] = 12.9716;
+// $request["lng"] = 77.5946;
+// $request["location"] = "Banglore"; //can be null? and in front end it shoudl try fetch with coordinates details if fails no probelm
+// $w->setCoordinates($request);
 // $fetch_on_demand = $w->fetchWeatherOndemand();
 // var_dump($fetch_on_demand);
 
 // $fetch_nearby_location = $w->fetchNearbyData($calc_nearby_coordinates);
 // var_dump($w->response_stack);
 // echo $w->isCached(13.125,77.756);
-echo "\n";
+// echo "\n";
 // echo $w->delCache(13.125,77.75);
-echo $w->clearCache();
+// echo $w->clearCache();
 
 

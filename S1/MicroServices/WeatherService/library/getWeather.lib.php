@@ -1,9 +1,11 @@
 <?php
 
 namespace library;
-require_once __DIR__."/vendor/autoload.php";
+require_once __DIR__."/../vendor/autoload.php";
+require_once __DIR__."/weather.lib.php";
+require_once __DIR__."/log.lib.php";
 
-
+use function \library\logg;
 /**
  * Rules:
  * The actaull data from the top cities were fetched for every one hour via cron
@@ -22,7 +24,6 @@ class getWeather {
      * Default Cron start with tamilnadu cities data
      */
     public function getTopcitieslst () {
-
     }
     /**
      * 
@@ -34,8 +35,41 @@ class getWeather {
      * and cache that
      * @return void
      */
-    public function searchWeather () {
-        
+    public function searchWeather ($params) {
+        try{
+            $weather = new \library\weather();
+            $weather->setCoordinates($params);
+            $lat = $weather->getCoordinates()["lat"];
+            $lng = $weather->getCoordinates()["lng"];
+            $location = $weather->getCoordinates()["location"] ?? NULL;
+            if(isset($lat) && isset($lng)) {
+                $isCached = $weather->getFromCache($lat,$lng);
+                if(empty($isCached)){
+                    $response = $weather->fetchWeatherOndemand();
+                    if($response) {
+                        
+                        var_dump($response);
+                    }
+                }else {
+                    var_dump($isCached);
+                }
+
+            }else {
+                throw new \serverException(ErrorCode:"2000");
+            }
+        }catch (\Throwable $e){
+            logg(file:"server_err",exception_:$e);
+            throw new \serverException(ErrorCode:"2000");
+        }
+
+    }
+    /**
+     * 
+     * update the redis queue, this gives tasks to worker
+     * @return void
+     */
+    public function updateQueue () {
+
     }
     
 

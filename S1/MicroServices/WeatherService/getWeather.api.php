@@ -1,5 +1,6 @@
 <?php
 namespace API;
+use library\getWeather;
 use Throwable;
 
 include_once __DIR__."/library/log.lib.php";
@@ -23,7 +24,7 @@ require __DIR__."/vendor/autoload.php"; // autoload contains the utils files // 
 include_once __DIR__."/REST.api.php";
 include_once __DIR__."/library/ExceptionHandler.php";
 include_once __DIR__."/library/general.lib.php";
-
+include_once __DIR__."/library/getWeather.lib.php";
 $REST = new \RESTapi\REST;
 
 function main  () {
@@ -42,8 +43,12 @@ function main  () {
                 $location   = $requestParams["location"];
                 if(isset($lat) && isset($lng) || isset($location)){
                     // echo (float) $lat;
-                    $genLib->sanitizedCoordinates($requestParams);
-                    // echo "works cool";
+                    $params = $genLib->sanitizedCoordinates($requestParams);
+                    $getWeather = new getWeather();
+                    $getWeather->searchWeather($params);
+                
+                    // var_dump($params);
+                    
                 }else {
                     throw new \clientException(ErrorCode:"1904");
                 }

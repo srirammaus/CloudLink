@@ -330,7 +330,7 @@ class cachelib  {
 
 
     }
-    public function getListCache (string $key,$head_tail,string $prefix = "default") {
+    public function getListCache (string $key,$head_tail,$start,$stop,string $prefix = "default") {
         try {
             $prefix .=":";
             if($head_tail === true) { //right popo
