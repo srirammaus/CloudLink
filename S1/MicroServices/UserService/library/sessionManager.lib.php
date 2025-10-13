@@ -224,7 +224,7 @@ class sessionManager {
         
         $this->genSessionToken();
         $this->genRefershToken();
-        $this->setExpiry($timezone); // includes maxage and expiry    
+        // $this->setExpiry($timezone); // includes maxage and expiry    
 
         
         try{

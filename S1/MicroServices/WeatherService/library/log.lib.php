@@ -27,7 +27,6 @@ namespace library;
 function logg($file,$message=null,$exception_=null,$type = "err"){ // this type err is used for future, if we getting postive logs we can this as 
     date_default_timezone_set("Asia/Kolkata");
     $root_dir = $_SERVER['DOCUMENT_ROOT'] ;
-    echo $root_dir;
     if($exception_) { 
         $msg = method_exists($exception_,'getCustomMessage')?$exception_->getCustomMessage():$exception_->getMessage();
         $exception_ = array(
@@ -38,7 +37,6 @@ function logg($file,$message=null,$exception_=null,$type = "err"){ // this type 
         $exception_ = json_encode($exception_);
         
     }else {
-        echo "This will happen";
         $exception_ = $message;
     }
     

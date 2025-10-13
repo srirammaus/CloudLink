@@ -297,7 +297,7 @@ class cachelib  {
             
          }
     }
-    public function delCache ($key) {
+    public function delCache ($key,$prefix = "default") {
         try {
             $prefix .=":";
             return $this->redis->del($prefix.$key) ?? [];
@@ -334,9 +334,9 @@ class cachelib  {
         try {
             $prefix .=":";
             if($head_tail === true) { //right popo
-                $redis->rRange($prefix.$key, $start, $stop); /* ['A', 'A', 'C', 'B', 'A'] */
+                $this->redis->rRange($prefix.$key, $start, $stop); /* ['A', 'A', 'C', 'B', 'A'] */
             }else { //left Rem
-                $redis->lRange($prefix.$key, $start, $stop); /* ['A', 'A', 'C', 'B', 'A'] */
+                $this->redis->lRange($prefix.$key, $start, $stop); /* ['A', 'A', 'C', 'B', 'A'] */
 
             }
         }catch (\RedisException $e) {
@@ -350,7 +350,7 @@ class cachelib  {
     // $redis->lRange('key1', 0, -1); /* ['A', 'A', 'C', 'B', 'A'] */
     // $redis->lRem('key1', 'A', 2); /* 2 */
     // $redis->lRange('key1', 0, -1); /* ['C', 'B', 'A'] */
-    public function rmItemFromListCache (string $key ,$item, $count, bool $head_tail) {
+    public function rmItemFromListCache (string $key ,$item, $count, bool $head_tail,$prefix = "default") {
         try {
             $prefix .=":";
             if($head_tail === true) { //right popo
@@ -365,7 +365,7 @@ class cachelib  {
             
         }
     }
-    public function popFromListCache(string $key , bool $head_tail) {
+    public function popFromListCache(string $key , bool $head_tail,$prefix = "default") {
         try {
             $prefix .=":";
             if($head_tail === true) { //right popo
@@ -379,6 +379,28 @@ class cachelib  {
             throw new \cacheException(ErrorCode:"2502");
             
         }
+    }
+    public function flushCache () {
+        return $this->redis->flushDb();
+    }
+
+    /**
+     * 
+     * adding , stcutrually this is a sorted set
+     * @param string $key
+     * @param string $value
+     * @param int $ttl
+     * @return void
+     */
+    public function geoAdd(string $key, string $value, int $ttl = 0) {
+    }
+    /**
+     * 
+     * Search by radius of 5km or 43km
+     * @return void
+     */
+    public function geoSearch(){
+
     }
 
 

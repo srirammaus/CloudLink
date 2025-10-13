@@ -24,9 +24,20 @@ class getWeather {
     public function getTopcitieslst () {
 
     }
-    public function getUserPreference () {
-
+    /**
+     * 
+     * This checks for the on demand data - [A event or message should be emitted in this time synchronusly no acknoloadement needed]
+     * first checks in the isCached
+     * if there return that
+     * if not 
+     * new on-demand fetch
+     * and cache that
+     * @return void
+     */
+    public function searchWeather () {
+        
     }
+    
 
 
 }

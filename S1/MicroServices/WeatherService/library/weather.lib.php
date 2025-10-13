@@ -8,16 +8,20 @@ namespace library;
  * In our db we having lat , lng in one decimal , two decimal, more decimal values
  * but we gonna use 0.045 for all
  */
-
+define("PREFIX","location_coordinates");
 include_once __DIR__."/../config/db_conn.php";
 include_once __DIR__."/ExceptionHandler.php";
 include_once __DIR__."/log.lib.php";
+include_once __DIR__."/../utils/cache.php";
 require_once __DIR__."/../vendor/autoload.php";
+
+use function \library\logg;
 class weather {
     public $paramaters = ["latitude","longitude","hourly"];// latitude=9.9285&longitude=78.0937&hourly=
     public $period_parameters = ["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","temperature_80m","temperature_120m","temperature_180m","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_speed_80m","wind_speed_120m","wind_speed_180m","wind_direction_10m","wind_direction_80m","wind_direction_120m","wind_direction_180m","wind_gusts_10m"];
     public $client_location_data=[];
     public $response_stack=[];
+
     public $data_types = [
             'application/json',
             'application/ld+json',
@@ -119,7 +123,8 @@ class weather {
                         if (!in_array($lat_lng, $remove_duplicates)) { 
                             array_push($remove_duplicates,$lat_lng);
                             array_push($this->response_stack,$body);    
-
+                            var_dump($body["latitude"] ,$body["longitude"]);
+                            // $this->cacheThem($body["latitude"] ,$body["longitude"],$body);
                         }
                     }
 
@@ -127,7 +132,6 @@ class weather {
                 }
                  //and some more elif condition for xml,and other types
                 
-
             }
             else if ($state == "rejected") {
                 $exception = $value['reason'];
@@ -210,8 +214,6 @@ class weather {
         return False; //In API phase , else false means throw unknown error occurred
     }
     public function guzzleErr($e) {
-
-        echo "reached  but printed";
         if(method_exists($e,"hasResopnse")){
             $response = $e->getResponse();
         }else {
@@ -288,12 +290,12 @@ class weather {
      * before that note you have get the user location while signin up
      * deafault is getting the top cities of the place of server location
      * if your code runs multiple region that region top cities has to be collected
-     * based on tier 1 or 2
+     * based on tier 1 (optional tier 2)
      * zero record found no problem but LOG them 
      * requested cities -  FOR CRON YOU NEED MORE CITIES SO THAT TIME ,USE MORE REQUESTED CITIES LIEK 100 OR 100O
      */
     public function get_default_top_cities (int $requested_cities = 50,$region ="India") { //india only in starting cron,starting only , it means the intaill point of cron
-        $query="SELECT c.city,c.latitude,c.longitude FROM cities_db AS c INNER JOIN cities_tier_list AS t ON c.city=t.city_name WHERE t.tier=1 OR t.tier=2 AND t.country=:country GROUP BY c.city";
+        $query="SELECT c.city,c.latitude,c.longitude FROM cities_db AS c INNER JOIN cities_tier_list AS t ON c.city=t.city_name WHERE t.tier=1  AND t.country=:country GROUP BY c.city"; //OR t.tier=2
         $prep = $this->getConn()->prepare($query);
         $prep->bindParam("country", $region);
         $res = $prep->execute();
@@ -322,6 +324,80 @@ class weather {
     public function get_server_location () {
 
     }
+    /**
+     * caching can throw erro cache this before exploding
+     * Storing key should be exact decimal , not in two or one (for 99% accurate result)
+     * $lat_5km = 0.0366;
+     * $lng_5km = 0.0254;
+     * @return void
+     */
+    public function cacheThem($lat,$lng,$value) { 
+        try{
+
+            $lat = (string) $lat;
+            $lng = (string) $lng;
+            if(gettype($value) == "array") {
+                $value = json_encode($value);
+            }
+            $default_expiry = 3600; //1hr
+            $key =  $lat .",". $lng;
+            $cache = new \utils\cachelib();
+            $cache->setStringCache($key,[$value],0,PREFIX); //unfortunately i set the third parameter expiry here , if removed it lot of places affected , so i put 0 here dont confused 
+            $cache->setExpiry($key,$default_expiry,PREFIX);
+        }catch(\Throwable $e) {
+            logg(file:"server_err",message: $e->getMessage());
+            return false;
+        }
+   
+    }
+    public function isCached ($lat,$lng) {
+        try {
+            $lat = (string) $lat;
+            $lng = (string) $lng;
+            $key =  $lat .",". $lng;
+            $cache =  new \utils\cachelib();
+            return $cache->isCached($key,PREFIX);
+        }catch(\Throwable $e) {
+            logg(file:"server_err",message: $e->getMessage());
+            return false;
+        }
+
+
+    }
+    public function delCache ($lat,$lng) {
+        try{
+            $lat = (string) $lat;
+            $lng = (string) $lng;
+            $key =  $lat .",". $lng;
+            $cache = new \utils\cachelib();
+            return $cache->delCache($key,PREFIX);
+        }catch(\Throwable $e) {
+            logg(file:"server_err",message: $e->getMessage());
+            return false;
+        }
+    }
+    public function clearCache () {
+        try{
+            $cache = new \utils\cachelib();
+            return $cache->flushCache();
+        }catch(\Throwable $e) {
+            logg(file:"server_err",message: $e->getMessage());
+            return false;
+        }
+    }
+    /**
+     * 
+     * check for existence in db via isCached
+     * if not insert
+     * insert steps are 1.fetch and 2.cache validata if not insert to cache with TTL of one hour
+     * key formta is let say we having 13.0082 77.6200 -  change this to string with a , symbol 13.0082,77.6200
+     * @return void
+     */
+    public function storeCache () {
+
+    }
+
+
 }
 
 
@@ -358,5 +434,12 @@ $request["location"] = "Banglore"; //can be null? and in front end it shoudl try
 $w->setCoordinates($request);
 // $fetch_on_demand = $w->fetchWeatherOndemand();
 // var_dump($fetch_on_demand);
-$fetch_nearby_location = $w->fetchNearbyData($calc_nearby_coordinates);
-var_dump($w->response_stack);
+
+// $fetch_nearby_location = $w->fetchNearbyData($calc_nearby_coordinates);
+// var_dump($w->response_stack);
+// echo $w->isCached(13.125,77.756);
+echo "\n";
+// echo $w->delCache(13.125,77.75);
+echo $w->clearCache();
+
+

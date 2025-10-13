@@ -11,7 +11,45 @@ class genLib {
         $conn = new \db\db_conn;
         return $conn->conn();
     }
+    /**
+     * 
+     * check not null
+     * check can be converted to float
+     * check they are in between range of -180 to 180| Type                               | Valid Range         | Description                                                 |
+     * | ---------------------------------- | ------------------- | ----------------------------------------------------------- |
+     * | **Latitude (Y-axis, North–South)** | **−90.0 → +90.0**   | 0° = Equator, +90° = North Pole, −90° = South Pole          |
+     * | **Longitude (X-axis, East–West)**  | **−180.0 → +180.0** | 0° = Prime Meridian (Greenwich), +180° = east, −180° = west |
+
+     * 
+     * @param mixed $coord
+     * @return void
+     */
+    public function sanitizedCoordinates ($coord_list) :array{
+        $coord_ = [];
+        $count = 0;
+        foreach ($coord_list as $key => $coord) {
     
+            if($coord == NULL){
+                return false;
+            }
+            $coord = (float)$coord; 
+
+            if(is_float($coord)){
+                if($coord >= -90.0 && $coord <= 90.0 && $count == 0 && $key == "latitude") { //lat
+                    $coord_[] = $coord;
+                }elseif ( $coord >= -180.0 && $coord <= 180.0 && $count == 1 && $key == "longitude") { //long
+                    $coord_[] = $coord;
+                }else {
+                    echo "Happen one time";
+                    break; //break if other string character like location start entering
+                }
+
+            } 
+            $count++;
+        }
+        return $coord_;
+        
+    }
     /**
     * check is a valida username throw error
     * check the username limit -50 
