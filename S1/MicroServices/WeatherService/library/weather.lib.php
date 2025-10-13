@@ -1,6 +1,9 @@
 <?php
 namespace library;
 /**
+ * https://nominatim.openstreetmap.org/reverse?lat=12.97194&lon=77.59369&format=json
+ * https://geocoding-api.open-meteo.com/v1/search?name=Bangalore
+ * https://api.open-meteo.com/v1/forecast?latitude=9.0779&longitude=77.3452&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation,precipitation_probability,apparent_temperature,rain,showers,snow_depth,snowfall,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,temperature_180m,temperature_120m,temperature_80m,wind_gusts_10m,wind_direction_180m,wind_direction_120m,wind_direction_80m,wind_direction_10m,wind_speed_180m,wind_speed_120m,wind_speed_80m,wind_speed_10m
  * use redis - geo radius,geoadd
  * In our db we having lat , lng in one decimal , two decimal, more decimal values
  * but we gonna use 0.045 for all
@@ -8,9 +11,20 @@ namespace library;
 
 include_once __DIR__."/../config/db_conn.php";
 include_once __DIR__."/ExceptionHandler.php";
+include_once __DIR__."/log.lib.php";
+require_once __DIR__."/../vendor/autoload.php";
 class weather {
     public $paramaters = ["latitude","longitude","hourly"];// latitude=9.9285&longitude=78.0937&hourly=
     public $period_parameters = ["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","temperature_80m","temperature_120m","temperature_180m","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_speed_80m","wind_speed_120m","wind_speed_180m","wind_direction_10m","wind_direction_80m","wind_direction_120m","wind_direction_180m","wind_gusts_10m"];
+    public $client_location_data=[];
+    public $response_stack=[];
+    public $data_types = [
+            'application/json',
+            'application/ld+json',
+            // 'application/xml',
+            // 'application/yaml',
+            // 'text/yaml',
+     ];
     public function __construct () {
 
     }
@@ -26,29 +40,247 @@ class weather {
     public function getWeatherOndemand () {
 
     }
-    public function fetchWeatherOndemand () {
-        $client = new \GuzzleHttp\Client(); 
-        $baseURL = "";
-        $path = "";
+    public function setCoordinates ($request) :void {
+        $this->client_location_data["lat"] = (string)$request["lat"];
+        $this->client_location_data["lng"] = (string)$request["lng"];
+        $this->client_location_data["location"] = (string)$request["location"] ?? NULL;
+        $this->client_location_data;
+        return;
+    }
+    /**
+     * 
+     * Return the coordinates of client requested
+     * @param mixed $request
+     * @return void
+     */
+    public function getCoordinates ():array {
+        return $this->client_location_data;
+    }
+
+    public function fetchNearbyData (array $location_coordinates)  //Async
+    { 
         
-        $response = $client->request("GET","");
+        $dotenv = \Dotenv\Dotenv::createImmutable(dirname(__DIR__,1)."/env",[".env"]);
+        $dotenv->load();
+        $baseURL = $_ENV["WEATHER_API_BASE_URL"];
+        $path = $_ENV["WEATHER_API_PATH"];
+       
+        try{    
+            $client = new \GuzzleHttp\Client(
+                ["timeout"=> 20.0,]  //10 because we are getting big data
+            ); 
+
+            $promises = [];
+
+            foreach ($location_coordinates as $coord) {
+                $query = http_build_query([
+                    'latitude'  => $coord[0],
+                    'longitude' => $coord[1],
+                    'hourly'    => implode(',', $this->period_parameters),
+                ]);
+                $url = "{$baseURL}{$path}?{$query}";
+                $promises[] = $client->getAsync($url);
+            }
+
+            $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+            $this->unpackPromisables($responses);
+
+        }catch(\GuzzleHttp\Exception\ClientException $e){
+            $response = $this->guzzleErr($e);
+            logg(file:"server_err",message: $response);
+
+        }catch(\GuzzleHttp\Exception\ServerException $e){
+            $response = $this->guzzleErr(($e));
+            logg(file:"server_err",message: $response);
+        
+        }catch(\GuzzleHttp\Exception\ConnectException $e){
+            $response = $this->guzzleErr(($e));
+            logg(file:"server_err",message: $response);
+        }catch(\Throwable $e){
+            logg(file:"server_err",exception_: $e);
+
+            
+        } 
+    
+
+    }
+    public function unpackPromisables ($promisable_responses) {
+        $remove_duplicates= [];
+        foreach($promisable_responses as $key =>$value ){
+            
+            $state = $value['state'];
+            if($state === "fulfilled") {
+                $val = $value['value'];
+                $body = $val->getBody()->getContents();
+                if( $this->isJson($body) ){
+                    $body = json_decode($body, true);
+                    $lat_lng =  $body["latitude"] &&$body["longitude"] ? [$body["latitude"] ,$body["longitude"] ] : NULL;
+                    if(isset($lat_lng)) {
+                        if (!in_array($lat_lng, $remove_duplicates)) { 
+                            array_push($remove_duplicates,$lat_lng);
+                            array_push($this->response_stack,$body);    
+
+                        }
+                    }
+
+                
+                }
+                 //and some more elif condition for xml,and other types
+                
+
+            }
+            else if ($state == "rejected") {
+                $exception = $value['reason'];
+                if (method_exists($exception,'hasResponse')) {
+                    $response = $exception->getResponse();
+                    $body  = $response->getBody()->getContents();
+                    $contentType = $response->getHeaderLine("Content-Type");
+                    if($this->isJson($body)){
+                        
+                        array_push($this->response_stack,$body);
+                    } //and some more elif condition for xml,and other types
+                    
+
+                } 
+
+            }
+            
+
+        }
+        // var_dump( $remove_duplicates );
+        return true;
+
+    }
+    public function isJson($val) {
+     
+        json_decode($val);
+        if(json_last_error() === JSON_ERROR_NONE) {
+            return true;
+        }
+
+    }
+    /**
+     * 168 values (7 days × 24 hours)
+     * timestamps in UTC
+     * temperature for each hour
+     * time[i] matches temp[i]
+     * we should alwaus open-meto with cooridnate in front-end we get the city name, coordites via
+     * https://geocoding-api.open-meteo.com/v1/search?name=Bangalore
+     * @return void
+     */
+    public function fetchWeatherOndemand () { 
+        $dotenv = \Dotenv\Dotenv::createImmutable(dirname(__DIR__,1)."/env",[".env"]);
+        $dotenv->load();
+        
+        $baseURL = $_ENV["WEATHER_API_BASE_URL"];
+        $path = $_ENV["WEATHER_API_PATH"];
+        $coords = $this->getCoordinates();
+        $query = http_build_query([
+            'latitude'  => $coords['lat'],
+            'longitude' => $coords['lng'],
+            'hourly'    => implode(',', $this->period_parameters)
+        ]);
+        try{    
+            $client = new \GuzzleHttp\Client(
+                ["timeout"=> 2.0,]
+            ); 
+            $url = "{$baseURL}{$path}?{$query}";
+            $response = $client->request("GET", $url);
+            if(method_exists($response,"getBody")){
+                $response = $response->getBody();
+                $resp = $response->getContents();
+                return $resp;
+            }
+        }catch(\GuzzleHttp\Exception\ClientException $e){
+            $response = $this->guzzleErr($e);
+            logg(file:"server_err",message: $response);
+
+        }catch(\GuzzleHttp\Exception\ServerException $e){
+            $response = $this->guzzleErr(($e));
+            logg(file:"server_err",message: $response);
+        
+        }catch(\GuzzleHttp\Exception\ConnectException $e){
+            $response = $this->guzzleErr(($e));
+            logg(file:"server_err",message: $response);
+        }catch(\Throwable $e){
+            logg(file:"server_err",exception_: $e);
+
+            
+        }   
+        return False; //In API phase , else false means throw unknown error occurred
+    }
+    public function guzzleErr($e) {
+
+        echo "reached  but printed";
+        if(method_exists($e,"hasResopnse")){
+            $response = $e->getResponse();
+        }else {
+            $response = $e->getMessage();
+        }
+        return $response;
     }
     /**
      * getting nearby regions with the lat and log , used to suggest the user to view there
-     * 
+     * note:the coordinates should be get from the request inital request from the client
+     * 5km - 6km radius are 0.045 
+     * mostly they all are similar some may show 0.045 as 5km some show 0.0366 becaause it is differing for cities better we use will below
+     * In haversine we got excate calc - 0.0366 for lat
+     * 0.0254 - for longitude.  both are less than 0.045 if i you get confused, see this i converted them to two decimalas 0.0366 as 0.037 okay and 0.0254 as 0.025
+     * calculate 10 cities around 5km backward and forth
      */
-    public function find_nearby_location () {
+    public function find_nearby_location_coordinates ($lat =0 , $lng = 0) {
+        $lat_5km = 0.0366;
+        $lng_5km = 0.0254;
+        echo ($lat."   ".$lng);
+        $lat_add = (float) $lat;
+        $lng_add = (float) $lng;
 
+        $lat_minus = (float) $lat;
+        $lng_minus = (float) $lng;
+
+        $location_coordinates = [];
+        if(isset($lat) && isset($lng)) {
+            for ($i=0;$i<5;$i++) {
+                $lat_add += $lat_5km;
+                $lng_add += $lng_5km;
+
+                $location_coordinates[$i] = [$lat_add, $lng_add];
+            }
+            for ($j=5;$j<10;$j++) {
+                $lat_minus -= $lat_5km;
+                $lng_minus -= $lng_5km;
+                $location_coordinates[$j] = [$lat_minus, $lng_minus];
+            }
+            return $location_coordinates;
+        }
+        return false;
     }
     /**
      * zero record found no problem but log it
      * after the frist on-demand , either be a location clickd or GPS of them 
      * this based on state or province or country
      * example : user clicked coimbatore locatation , 10 cities of tamilnadu data were donwloaded and stored in redis
-     * example2: if GPS clicked in usilampatti, check the usillapatti is avaible on statelist, then there 
+     * example2: if GPS clicked in usilampatti, check the usillapatti is avaible  
+     * anything can done after getting the exact location name 
+     * no record found no problem
      */
-    public function get_nearby_top_cities ($on_demanded_lat, $on_demanded_lng) {
-
+    public function get_nearby_top_cities ($location)  {
+        $query = "SELECT t.city_name,t.latitude,t.longitude FROM cities_tier_list AS t LEFT JOIN cities_db AS c 
+        ON c.state=t.state WHERE c.city=:location_city AND t.latitude IS NOT NULL AND t.longitude IS NOT NULL";
+        $conn = $this->getConn();
+        $prep = $conn->prepare($query);
+        $prep->bindParam(":location_city", $location);
+        $prep->setFetchMode(\PDO::FETCH_ASSOC);
+        $res = $prep->execute();
+        if($res) {
+            $result = $prep->fetchAll();
+            if(count($result) > 0) {
+                return $result;
+            }else {
+                return false;
+            }
+        }
+        return false;
 
     }
     /**
@@ -82,6 +314,11 @@ class weather {
         }
     
     }
+    /**
+     * 
+     * our current server placed locations
+     * @return void
+     */
     public function get_server_location () {
 
     }
@@ -90,7 +327,36 @@ class weather {
 
 $w = new weather();
 $top_cities = $w->get_default_top_cities();
-var_dump($top_cities);
-// $on_demanded_lat = 
-// $on_demanded_lng = 
-// $nearby_top_cities = $w->get_nearby_top_cities();
+// var_dump($top_cities);
+$nearby_top_cities = $w->get_nearby_top_cities($location = "Tenkasi");
+// var_dump( $nearby_top_cities );
+$lat = 12.9716;
+$lng = 77.5946;
+$calc_nearby_coordinates = $w->find_nearby_location_coordinates($lat, $lng);
+/**| # | Latitude | Longitude |
+$lat = 12.9716; use this as example that is MG road banglore
+$lng = 77.5946;
+| #  | Latitude | Longitude | Distance (km) |
+| -- | -------- | --------- | ------------- |
+| 1  | 13.0082  | 77.6200   | 4.913         |
+| 2  | 13.0448  | 77.6454   | 9.826         |
+| 3  | 13.0814  | 77.6708   | 14.738        |
+| 4  | 13.1180  | 77.6962   | 19.650        |
+| 5  | 13.1546  | 77.7216   | 24.562        |
+| 6  | 12.9350  | 77.5692   | 4.913         |
+| 7  | 12.8984  | 77.5438   | 9.826         |
+| 8  | 12.8618  | 77.5184   | 14.740        |
+| 9  | 12.8252  | 77.4930   | 19.654        |
+| 10 | 12.7886  | 77.4676   | 24.568        |
+
+ */
+// var_dump( $calc_nearby_coordinates );
+$request = [];
+$request["lat"] = 12.9716;
+$request["lng"] = 77.5946;
+$request["location"] = "Banglore"; //can be null? and in front end it shoudl try fetch with coordinates details if fails no probelm
+$w->setCoordinates($request);
+// $fetch_on_demand = $w->fetchWeatherOndemand();
+// var_dump($fetch_on_demand);
+$fetch_nearby_location = $w->fetchNearbyData($calc_nearby_coordinates);
+var_dump($w->response_stack);

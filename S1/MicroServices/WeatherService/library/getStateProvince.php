@@ -35,7 +35,11 @@ foreach ($cities as $row) {
         echo "Error fetching $city\n";
         continue;
     }
-    
+    /**India → State
+    France → Region / Département
+    Japan → Prefecture
+    Kuwait → Governorate
+    Others → Province, County, District, etc.*/
     $data = json_decode($response, true);
     if (isset($data[0]['address']['state'])) {
         $state = $data[0]['address']['state'];
