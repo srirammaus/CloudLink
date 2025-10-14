@@ -30,37 +30,43 @@ class getWeather {
     /**
      * 
      * This checks for the on demand data - [A event or message should be emitted in this time synchronusly no acknoloadement needed]
-     * first checks in the isCached
+     * first checks in the getCached
      * if there return that
      * if not 
      * new on-demand fetch
      * and cache that
      * @return void
      */
-    public function searchWeather ($params) {
+    public function searchWeather ($params,$no_cache=false) {
         try{
             $weather = new \library\weather();
             $weather->setCoordinates($params);
             $lat = $weather->getCoordinates()["lat"];
             $lng = $weather->getCoordinates()["lng"];
             $location = $weather->getCoordinates()["location"] ?? NULL;
+            $bucket_prefix = $weather->getBucketPrefix($lat, $lng);
             if(isset($lat) && isset($lng)) {
-                $isCached = $weather->getFromCache($lat,$lng);
-                if(empty($isCached)){
+                $getCached = $weather->getFromCache($lat,$lng,$bucket_prefix);
+                if(empty($getCached)){
                     $response = $weather->fetchWeatherOndemand();
                     if($response) {
                         $this->updateQueue($lat,$lng);
                         return json_decode($response);
                     }
                 }else {
-                    if($weather->isJson($isCached)) {
-                        return json_decode($isCached);
+                    if($weather->isJson($getCached)) {
+                        return json_decode($getCached);
                     }else {
-                        $get_reference_coord = explode(":",$isCached);
+                        
+                        $get_reference_coord = explode(":",$getCached);
                         $get_reference_coord = $get_reference_coord[1];
                         $get_reference_coord= explode(",",$get_reference_coord);
-                        $isCached = $weather->getFromCache($get_reference_coord[0],$get_reference_coord[1]);
-                        return json_decode($isCached);
+                        $getCached = $weather->getFromCache($get_reference_coord[0],$get_reference_coord[1],$bucket_prefix);
+                        if(!empty($getCached)){
+                            return json_decode($getCached);
+                        }
+                        return false;
+                        
                     }
                 }
 

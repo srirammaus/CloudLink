@@ -65,9 +65,12 @@ class weather {
         return $this->client_location_data;
     }
 
-    public function fetchNearbyData (array $location_coordinates)  //Async
+    public function fetchNearbyData (array $location_coordinates,$safe_limit = NULL)  //Async
     { 
         
+        if($safe_limit ==NULL) {
+            $safe_limit = count($location_coordinates) -1;
+        }
         $dotenv = \Dotenv\Dotenv::createImmutable(dirname(__DIR__,1)."/env",[".env"]);
         $dotenv->load();
         $baseURL = $_ENV["WEATHER_API_BASE_URL"];
@@ -91,7 +94,7 @@ class weather {
             }
 
             $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
-            $this->unpackPromisables($responses);
+            $this->unpackPromisables($responses,$safe_limit);
             return true;
 
         }catch(\GuzzleHttp\Exception\ClientException $e){
@@ -113,9 +116,10 @@ class weather {
     
 
     }
-    public function unpackPromisables ($promisable_responses) {
+    public function unpackPromisables ($promisable_responses,$safe_limit) {
         // removing udplcaites is good idea , for our project removeing that outside is perfect to store them by refernce
         // $remove_duplicates= [];
+        $count =0;
         $duplicate_find_stack = [];
         foreach($promisable_responses as $key =>$value ){
             
@@ -126,13 +130,15 @@ class weather {
                 if( $this->isJson($body) ){
                     $body = json_decode($body, true);
                     $lat_lng =  $body["latitude"] &&$body["longitude"] ? [$body["latitude"] ,$body["longitude"] ] : NULL;
-                    if(isset($lat_lng)) {
+                    if(isset($lat_lng) && $count <= $safe_limit) {
                         if(in_array($lat_lng, $duplicate_find_stack)) {
                             $ref_idx = array_search($lat_lng,$duplicate_find_stack);
+                            echo "\ndup".$count;
                             $ref = ["REF" => $ref_idx ];
                             array_push($this->response_stack,$ref);
                         }
                         else {
+                            echo "\nreal".$count;
                             array_push($duplicate_find_stack, $lat_lng);
                             array_push($this->response_stack,$body);  
 
@@ -145,6 +151,9 @@ class weather {
                         //     var_dump($body["latitude"] ,$body["longitude"]);
                         //     // $this->cacheThem($body["latitude"] ,$body["longitude"],$body);
                         // }
+                    }else if (isset($lat_lng) && $count > $safe_limit) {
+                        // echo "Here never reached";
+                        array_push($this->response_stack,$body);
                     }
 
                 
@@ -168,7 +177,7 @@ class weather {
 
             }
             
-
+        $count++ ;
         }
         // var_dump( $remove_duplicates );
         return true;
@@ -374,16 +383,22 @@ class weather {
      * $lng_5km = 0.0254;
      * @return void
      */
-    public function cacheThem($lat,$lng,$value) { 
+    public function cacheThem($lat,$lng,$value,$bucket_prefix =NULL) { 
         try{
 
             $lat = (string) $lat;
             $lng = (string) $lng;
+            
             if(gettype($value) == "array") {
                 $value = json_encode($value);
             }
             $default_expiry = 3600; //1hr
             $key =  $lat .",". $lng;
+            if($bucket_prefix != NULL) {
+                $key= $bucket_prefix .":". $key;
+                // echo "Here Reached Once   ".$key;
+
+            }
             $cache = new \utils\cachelib();
             $cache->setStringCache($key,[$value],0,LOCATION_PREFIX); //unfortunately i set the third parameter expiry here , if removed it lot of places affected , so i put 0 here dont confused 
             $cache->setExpiry($key,$default_expiry,LOCATION_PREFIX);
@@ -393,11 +408,14 @@ class weather {
         }
    
     }
-    public function isCached ($lat,$lng) {
+    public function isCached ($lat,$lng, $bucket_prefix = NULL) {
         try {
             $lat = (string) $lat;
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
+            if($bucket_prefix != NULL) {
+                $key= $bucket_prefix .":". $key;
+            }
             $cache =  new \utils\cachelib();
             return $cache->isCached($key,LOCATION_PREFIX);
         }catch(\Throwable $e) {
@@ -407,11 +425,14 @@ class weather {
 
 
     }
-    public function getFromCache ($lat,$lng) {
+    public function getFromCache ($lat,$lng,$bucket_prefix = NULL) {
         try {
             $lat = (string) $lat;
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
+            if($bucket_prefix != NULL) {
+                $key= $bucket_prefix .":". $key;
+            }
             $cache =  new \utils\cachelib();
             return $cache->getStringCache($key,LOCATION_PREFIX);
         }catch(\Throwable $e) {
@@ -456,7 +477,7 @@ class weather {
      * @param mixed $lng
      * @return void
      */
-    public function geBucketPrefix ($lat,$lng) {
+    public function getBucketPrefix ($lat,$lng):string{
         $lat = (int) $lat;
         $lng = (int) $lng;
 
