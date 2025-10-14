@@ -308,7 +308,7 @@ class cachelib  {
             
         }
     }
-    public function setListCache (string $key ,array $values,int $expiry,bool $head_tail,string $prefix = "default") {
+    public function setListCache (string $key ,array $values,bool $head_tail,string $prefix = "default") {
         try {
             $prefix .=":";
             if($head_tail === true) { //right push
@@ -320,7 +320,7 @@ class cachelib  {
                     $this->redis->lPush($prefix.$key, $val); 
                 }
             }
-            $this->redis->expire($prefix.$key,$expiry);
+            // $this->redis->expire($prefix.$key,$expiry);
         }catch (\RedisException $e) {
             //take log and throw error again
             logg(file:"redis_err",exception_: $e);

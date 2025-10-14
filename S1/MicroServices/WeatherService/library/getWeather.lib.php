@@ -5,6 +5,8 @@ require_once __DIR__."/../vendor/autoload.php";
 require_once __DIR__."/weather.lib.php";
 require_once __DIR__."/log.lib.php";
 
+define("WORKER_PREFIX","wokers");
+
 use function \library\logg;
 /**
  * Rules:
@@ -47,8 +49,8 @@ class getWeather {
                 if(empty($isCached)){
                     $response = $weather->fetchWeatherOndemand();
                     if($response) {
-                        
                         var_dump($response);
+                        $this->updateQueue($lat,$lng);
                     }
                 }else {
                     var_dump($isCached);
@@ -64,11 +66,15 @@ class getWeather {
 
     }
     /**
-     * 
+     * (string $key ,array $values,bool $head_tail,string $prefix = "default")
      * update the redis queue, this gives tasks to worker
      * @return void
      */
-    public function updateQueue () {
+    public function updateQueue ($lat,$lng) {
+        $coord = $lat.",".$lng;
+        $key = "job_queues";
+        $cache =  new \utils\cachelib();
+        $cache->setListCache($key,[$coord],true,WORKER_PREFIX);
 
     }
     

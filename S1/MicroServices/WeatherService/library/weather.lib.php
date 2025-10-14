@@ -8,7 +8,7 @@ namespace library;
  * In our db we having lat , lng in one decimal , two decimal, more decimal values
  * but we gonna use 0.045 for all
  */
-define("PREFIX","location_coordinates");
+define("LOCATION_PREFIX","location_coordinates");
 include_once __DIR__."/../config/db_conn.php";
 include_once __DIR__."/ExceptionHandler.php";
 include_once __DIR__."/log.lib.php";
@@ -75,7 +75,7 @@ class weather {
        
         try{    
             $client = new \GuzzleHttp\Client(
-                ["timeout"=> 20.0,]  //10 because we are getting big data
+                ["timeout"=> 20.0,]  //20 because we are getting big data
             ); 
 
             $promises = [];
@@ -192,7 +192,7 @@ class weather {
         ]);
         try{    
             $client = new \GuzzleHttp\Client(
-                ["timeout"=> 2.0,]
+                ["timeout"=> 20.0,]
             ); 
             $url = "{$baseURL}{$path}?{$query}";
             $response = $client->request("GET", $url);
@@ -350,8 +350,8 @@ class weather {
             $default_expiry = 3600; //1hr
             $key =  $lat .",". $lng;
             $cache = new \utils\cachelib();
-            $cache->setStringCache($key,[$value],0,PREFIX); //unfortunately i set the third parameter expiry here , if removed it lot of places affected , so i put 0 here dont confused 
-            $cache->setExpiry($key,$default_expiry,PREFIX);
+            $cache->setStringCache($key,[$value],0,LOCATION_PREFIX); //unfortunately i set the third parameter expiry here , if removed it lot of places affected , so i put 0 here dont confused 
+            $cache->setExpiry($key,$default_expiry,LOCATION_PREFIX);
         }catch(\Throwable $e) {
             logg(file:"server_err",message: $e->getMessage());
             return false;
@@ -364,7 +364,7 @@ class weather {
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
             $cache =  new \utils\cachelib();
-            return $cache->isCached($key,PREFIX);
+            return $cache->isCached($key,LOCATION_PREFIX);
         }catch(\Throwable $e) {
             logg(file:"server_err",message: $e->getMessage());
             return false;
@@ -378,7 +378,7 @@ class weather {
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
             $cache =  new \utils\cachelib();
-            return $cache->getStringCache($key,PREFIX);
+            return $cache->getStringCache($key,LOCATION_PREFIX);
         }catch(\Throwable $e) {
             logg(file:"server_err",message: $e->getMessage());
             return false;
@@ -391,7 +391,7 @@ class weather {
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
             $cache = new \utils\cachelib();
-            return $cache->delCache($key,PREFIX);
+            return $cache->delCache($key,LOCATION_PREFIX);
         }catch(\Throwable $e) {
             logg(file:"server_err",message: $e->getMessage());
             return false;
