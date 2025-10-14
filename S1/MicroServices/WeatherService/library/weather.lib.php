@@ -75,15 +75,15 @@ class weather {
        
         try{    
             $client = new \GuzzleHttp\Client(
-                ["timeout"=> 20.0,]  //20 because we are getting big data
+                ["timeout"=> 60.0,]  //20 because we are getting big data
             ); 
 
             $promises = [];
 
             foreach ($location_coordinates as $coord) {
                 $query = http_build_query([
-                    'latitude'  => $coord[0],
-                    'longitude' => $coord[1],
+                    'latitude'  => $coord["latitude"],
+                    'longitude' => $coord["longitude"],
                     'hourly'    => implode(',', $this->period_parameters),
                 ]);
                 $url = "{$baseURL}{$path}?{$query}";
@@ -92,6 +92,7 @@ class weather {
 
             $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
             $this->unpackPromisables($responses);
+            return true;
 
         }catch(\GuzzleHttp\Exception\ClientException $e){
             $response = $this->guzzleErr($e);
@@ -106,14 +107,16 @@ class weather {
             logg(file:"server_err",message: $response);
         }catch(\Throwable $e){
             logg(file:"server_err",exception_: $e);
-
-            
         } 
+
+        return false;
     
 
     }
     public function unpackPromisables ($promisable_responses) {
-        $remove_duplicates= [];
+        // removing udplcaites is good idea , for our project removeing that outside is perfect to store them by refernce
+        // $remove_duplicates= [];
+        $duplicate_find_stack = [];
         foreach($promisable_responses as $key =>$value ){
             
             $state = $value['state'];
@@ -124,12 +127,24 @@ class weather {
                     $body = json_decode($body, true);
                     $lat_lng =  $body["latitude"] &&$body["longitude"] ? [$body["latitude"] ,$body["longitude"] ] : NULL;
                     if(isset($lat_lng)) {
-                        if (!in_array($lat_lng, $remove_duplicates)) { 
-                            array_push($remove_duplicates,$lat_lng);
-                            array_push($this->response_stack,$body);    
-                            var_dump($body["latitude"] ,$body["longitude"]);
-                            // $this->cacheThem($body["latitude"] ,$body["longitude"],$body);
+                        if(in_array($lat_lng, $duplicate_find_stack)) {
+                            $ref_idx = array_search($lat_lng,$duplicate_find_stack);
+                            $ref = ["REF" => $ref_idx ];
+                            array_push($this->response_stack,$ref);
                         }
+                        else {
+                            array_push($duplicate_find_stack, $lat_lng);
+                            array_push($this->response_stack,$body);  
+
+                        }   
+
+                        
+                        // if (!in_array($lat_lng, $remove_duplicates)) { 
+                        //     array_push($remove_duplicates,$lat_lng);
+                        //     array_push($this->response_stack,$body);    
+                        //     var_dump($body["latitude"] ,$body["longitude"]);
+                        //     // $this->cacheThem($body["latitude"] ,$body["longitude"],$body);
+                        // }
                     }
 
                 
@@ -184,7 +199,7 @@ class weather {
         $path = $_ENV["WEATHER_API_PATH"];
     
         $coords = $this->getCoordinates();
-        var_dump($coords);
+        // var_dump($coords);
         $query = http_build_query([
             'latitude'  => $coords['lat'],
             'longitude' => $coords['lng'],
@@ -254,12 +269,12 @@ class weather {
                 $lat_add += $lat_5km;
                 $lng_add += $lng_5km;
 
-                $location_coordinates[$i] = [$lat_add, $lng_add];
+                $location_coordinates[$i] = ["latitude" => $lat_add,"longitude" =>$lng_add];
             }
             for ($j=5;$j<10;$j++) {
                 $lat_minus -= $lat_5km;
                 $lng_minus -= $lng_5km;
-                $location_coordinates[$j] = [$lat_minus, $lng_minus];
+                $location_coordinates[$j] = ["latitude" => $lat_minus, "longitude" =>$lng_minus];
             }
             return $location_coordinates;
         }
@@ -291,6 +306,26 @@ class weather {
             }
         }
         return false;
+
+    }
+    public function get_nearby_top_cities_by_coordinates ($lat,$lng):array  {
+        $query = "SELECT t.latitude,t.longitude FROM cities_tier_list AS t LEFT JOIN cities_db AS c 
+        ON c.state=t.state WHERE t.city_name IS NOT NULL AND c.latitude=:latitude AND c.longitude=:longitude";
+        $conn = $this->getConn();
+        $prep = $conn->prepare($query);
+        $prep->bindParam(":latitude", $lat);
+        $prep->bindParam(":longitude",$lng);
+        $prep->setFetchMode(\PDO::FETCH_ASSOC);
+        $res = $prep->execute();
+        if($res) {
+            $result = $prep->fetchAll();
+            if(count($result) > 0) {
+                return $result;
+            }else {
+                return [];
+            }
+        }
+        return [];
 
     }
     /**
@@ -407,16 +442,57 @@ class weather {
         }
     }
     /**
+     * we gonna design our own algorithm 
+     * bucketed range finder O log N sometime O log
+     * backet name example if the coordinate is 12.657 ,77.675 then the actuall bucket is [11,12,13-76,77,]
      * 
-     * check for existence in db via isCached
-     * if not insert
-     * insert steps are 1.fetch and 2.cache validata if not insert to cache with TTL of one hour
-     * key formta is let say we having 13.0082 77.6200 -  change this to string with a , symbol 13.0082,77.6200
-     * @return void
      */
-    public function storeCache () {
+    public function in_range($lat,$lng) {
 
     }
+    /**
+     * Result 
+     * @param mixed $lat
+     * @param mixed $lng
+     * @return void
+     */
+    public function geBucketPrefix ($lat,$lng) {
+        $lat = (int) $lat;
+        $lng = (int) $lng;
+
+        $back_lat = $lat -1;
+        $back_lng = $lng -1;
+
+        $for_lat = $lat+1;
+        $for_lng = $lng+ 1;
+
+        $lat_buck = [$back_lat,$lat,$for_lat];
+        $lng_buck = [$back_lng,$lng,$for_lng];
+
+        $lat_buck = implode(",",$lat_buck);
+        $lng_buck = implode(",",$lng_buck);
+
+        $bucket_prefix = $lat_buck."-".$lng_buck;
+        return $bucket_prefix;
+    }
+    /**
+     *  should result three bucket prefix of array .length of three
+     * 
+     * @param mixed $lat
+     * @param mixed $lng
+     * @return void
+     */
+    public function getAllPossibleBucket ($lat,$lng){
+        $all_possible_buckets = [];
+        $possilbilty_creator = [0,1,-1];
+
+        foreach ($possilbilty_creator as $key => $value) {
+            $possible_buckets = $this->geBucketPrefix($lat+$value,$lng+$value);
+            array_push($all_possible_buckets, $possible_buckets);
+        }
+
+    }
+
 
 
 }
@@ -458,6 +534,7 @@ $lng = 77.5946;
 
 // $fetch_nearby_location = $w->fetchNearbyData($calc_nearby_coordinates);
 // var_dump($w->response_stack);
+
 // echo $w->isCached(13.125,77.756);
 // echo "\n";
 // echo $w->delCache(13.125,77.75);

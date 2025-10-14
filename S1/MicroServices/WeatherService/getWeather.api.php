@@ -45,7 +45,13 @@ function main  () {
                     // echo (float) $lat;
                     $params = $genLib->sanitizedCoordinates($requestParams);
                     $getWeather = new getWeather();
-                    $getWeather->searchWeather($params);
+                    $response = $getWeather->searchWeather($params);
+                    if($response) {
+                        $REST->response(statusCode:200,flag:"1",message: $response); //flag will be come with $resp
+
+                    }else {
+                        throw new \serverException(ErrorCode:"2003");
+                    }
                 
                     // var_dump($params);
                     

@@ -213,7 +213,7 @@ class REST {
             $key=> $flag,
             "message"=> $message,
         );
-       
+        
         echo json_encode($resp);
     }
     /**
@@ -221,6 +221,14 @@ class REST {
      */
     public function badRequest() {
         
+    }
+    public function isJson($val) {
+     
+        json_decode($val);
+        if(json_last_error() === JSON_ERROR_NONE) {
+            return true;
+        }
+
     }
     public function test () {
         echo "Works fine..";

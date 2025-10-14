@@ -240,7 +240,14 @@ class genLib {
         }
         return false;
     }
+    public function isJson($val) {
+     
+        json_decode($val);
+        if(json_last_error() === JSON_ERROR_NONE) {
+            return true;
+        }
 
+    }
 
 }
 ?>

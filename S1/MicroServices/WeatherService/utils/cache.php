@@ -37,6 +37,7 @@ class cachelib  {
     public function __construct() {
         try {
             $this->redis = $this->redisConn();
+
         }catch (\RedisException $e) {
             //take log and throw error again
             logg(file:"redis_err",exception_: $e);
@@ -377,6 +378,16 @@ class cachelib  {
             //take log and throw error again
             logg(file:"redis_err",exception_: $e);
             throw new \cacheException(ErrorCode:"2502");
+            
+        }
+    }
+    public function getBRPOP (string $key,$prefix = "workers") {
+        try {
+            $prefix .= ":";
+            return $this->redis->brpop($prefix.$key,0);
+        }catch (\RedisException $e) {
+            //take log and throw error again
+            logg(file:"redis_err",exception_: $e);
             
         }
     }

@@ -5,7 +5,7 @@ require_once __DIR__."/../vendor/autoload.php";
 require_once __DIR__."/weather.lib.php";
 require_once __DIR__."/log.lib.php";
 
-define("WORKER_PREFIX","wokers");
+define("WORKER_PREFIX","workers");
 
 use function \library\logg;
 /**
@@ -49,11 +49,19 @@ class getWeather {
                 if(empty($isCached)){
                     $response = $weather->fetchWeatherOndemand();
                     if($response) {
-                        var_dump($response);
                         $this->updateQueue($lat,$lng);
+                        return json_decode($response);
                     }
                 }else {
-                    var_dump($isCached);
+                    if($weather->isJson($isCached)) {
+                        return json_decode($isCached);
+                    }else {
+                        $get_reference_coord = explode(":",$isCached);
+                        $get_reference_coord = $get_reference_coord[1];
+                        $get_reference_coord= explode(",",$get_reference_coord);
+                        $isCached = $weather->getFromCache($get_reference_coord[0],$get_reference_coord[1]);
+                        return json_decode($isCached);
+                    }
                 }
 
             }else {
@@ -63,6 +71,7 @@ class getWeather {
             logg(file:"server_err",exception_:$e);
             throw new \serverException(ErrorCode:"2000");
         }
+        return false;
 
     }
     /**
@@ -72,12 +81,23 @@ class getWeather {
      */
     public function updateQueue ($lat,$lng) {
         $coord = $lat.",".$lng;
-        $key = "job_queues";
+        $key = "job_queue";
         $cache =  new \utils\cachelib();
-        $cache->setListCache($key,[$coord],true,WORKER_PREFIX);
+        $cache->setListCache($key,[$coord],false,WORKER_PREFIX);
 
     }
     
-
+/**Testing 
+http://localhost:8082/getWeather.api.php?latitude=13.0082&longitude=77.6200
+http://localhost:8082/getWeather.api.php?latitude=12.9716&longitude=77.5946
+http://localhost:8082/getWeather.api.php?latitude=19.0760&longitude=72.8777
+http://localhost:8082/getWeather.api.php?latitude=28.6139&longitude=77.2090
+http://localhost:8082/getWeather.api.php?latitude=17.3850&longitude=78.4867
+http://localhost:8082/getWeather.api.php?latitude=22.5726&longitude=88.3639
+http://localhost:8082/getWeather.api.php?latitude=26.9124&longitude=75.7873
+http://localhost:8082/getWeather.api.php?latitude=9.9312&longitude=76.2673
+http://localhost:8082/getWeather.api.php?latitude=11.0168&longitude=76.9558
+http://localhost:8082/getWeather.api.php?latitude=23.0225&longitude=72.5714
+ */
 
 }
