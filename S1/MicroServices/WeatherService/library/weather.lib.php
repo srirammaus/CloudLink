@@ -91,6 +91,9 @@ class weather {
                 ]);
                 $url = "{$baseURL}{$path}?{$query}";
                 $promises[] = $client->getAsync($url);
+                sleep(1); 
+                // usleep(500000); // 0.5 second  //other wise getting too many concurent request
+
             }
 
             $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
@@ -265,7 +268,7 @@ class weather {
     public function find_nearby_location_coordinates ($lat =0 , $lng = 0) {
         $lat_5km = 0.0366;
         $lng_5km = 0.0254;
-        echo ($lat."   ".$lng);
+        // echo ($lat."   ".$lng);
         $lat_add = (float) $lat;
         $lng_add = (float) $lng;
 
@@ -329,11 +332,14 @@ class weather {
         if($res) {
             $result = $prep->fetchAll();
             if(count($result) > 0) {
+                echo "I came 1";
                 return $result;
             }else {
+                echo "I came 2".$lat.$lng;
                 return [];
             }
         }
+        echo  "I came3";
         return [];
 
     }
@@ -430,6 +436,7 @@ class weather {
             $lat = (string) $lat;
             $lng = (string) $lng;
             $key =  $lat .",". $lng;
+            
             if($bucket_prefix != NULL) {
                 $key= $bucket_prefix .":". $key;
             }
@@ -463,21 +470,98 @@ class weather {
         }
     }
     /**
+     * use coimbtore or banglore coordinate to understand this 
      * we gonna design our own algorithm 
      * bucketed range finder O log N sometime O log
      * backet name example if the coordinate is 12.657 ,77.675 then the actuall bucket is [11,12,13-76,77,]
-     * 
+     * shortest distance difference should be atleast 0.0366 and 0.0254
+     * nothing should be lesser than zero that means there is negative value occurs so zero is prvention
      */
     public function in_range($lat,$lng) {
+        $cache = new \utils\cachelib();
+        $shortest_distance = [1000,1000]; //intializing a temp higest value
+        $shortest_distance_coord = []; //cooresponding coordinates for shrotest distance
+        $all_possible_buckets = $this->getAllPossibleBucket($lat,$lng);
+        foreach ($all_possible_buckets as $bucket_prefix) {
+            # code...
+        
+            $prefix =LOCATION_PREFIX.":".$bucket_prefix;
+            $keys = $cache->getKeys($prefix);
+            // var_dump($keys);  
+            // echo "\n".$bucket_prefix;      
+            foreach($keys as $key) {
+                $key = explode(":",$key);
+                $key = array_pop($key);
+                $key = explode(",", $key);
+
+                $lat_key =(float) $key[0];
+                $lng_key = (float)$key[1];
+
+                $max_lat_val = max($lat_key,$lat);
+                $min_lat_val = min($lat_key,$lat);
+
+                $max_lng_val = max($lng_key,$lng);
+                $min_lng_val = min($lng_key,$lng);
+
+                $lat_dist = $max_lat_val - $min_lat_val;
+                $lng_dist = $max_lng_val - $min_lng_val;
+
+                // echo "\nThis happens  : ".$lat_dist ." : ".$lng_dist;
+
+                if($lat_dist < $shortest_distance[0]  && $lat_dist >=0 && $lng_dist < $shortest_distance[1]  && $lng_dist >= 0){
+                    $shortest_distance[0] = $lat_dist;
+                    $shortest_distance[1] = $lng_dist;
+
+                    $shortest_distance_coord[0] = $lat_key;
+                    $shortest_distance_coord[1] = $lng_key;
+                }
+            }
+        }
+        if($shortest_distance[0] < 0.0366 && $shortest_distance[1] < 0.0254) {
+            // return json_encode($shortest_distance_coord);
+            // echo "\nI will find the shortest range ". $shortest_distance[0]. " ".$shortest_distance[1];
+            
+            $bucket_prefix = $this->getBucketPrefix($shortest_distance_coord[0],$shortest_distance_coord[1]);
+            // echo "The coord is : ".$shortest_distance_coord[0]. "  ".$shortest_distance_coord[1]. " ".$bucket_prefix;
+            return $this->getFromCache($shortest_distance_coord[0],$shortest_distance_coord[1],$bucket_prefix );
+        }
+        return false;
+    }
+    public function getBucketPrefix($lat,$lng){
+        $lat = (int) $lat;
+        $lng = (int) $lng;
+
+        $bucket_prefix = $lat."-".$lng;
+        return $bucket_prefix;
+    }
+    public function getAllPossibleBucket ($lat,$lng):array{
+        $all_possible_buckets = [];
+        $all_possible_buckets = [];
+        $adjustments = [-1, 0, 1];
+
+        // Convert to integer part (floor)
+        $lat = intval(floor($lat));
+        $lng = intval(floor($lng));
+
+        foreach ($adjustments as $lat_adj) {
+            foreach ($adjustments as $lng_adj) {
+                $bucket_lat = $lat + $lat_adj;
+                $bucket_lng = $lng + $lng_adj;
+                $all_possible_buckets[] = "{$bucket_lat}-{$bucket_lng}";
+            }
+        }
+
+        return $all_possible_buckets;
 
     }
     /**
      * Result 
+     * NOT IN USE
      * @param mixed $lat
      * @param mixed $lng
      * @return void
      */
-    public function getBucketPrefix ($lat,$lng):string{
+    public function getBucketPrefix_ ($lat,$lng):string{
         $lat = (int) $lat;
         $lng = (int) $lng;
 
@@ -498,22 +582,69 @@ class weather {
     }
     /**
      *  should result three bucket prefix of array .length of three
-     * 
+     * NOT IN USE
      * @param mixed $lat
      * @param mixed $lng
      * @return void
      */
-    public function getAllPossibleBucket ($lat,$lng){
+    public function getAllPossibleBucket_ ($lat,$lng):array{
         $all_possible_buckets = [];
         $possilbilty_creator = [0,1,-1];
 
         foreach ($possilbilty_creator as $key => $value) {
-            $possible_buckets = $this->geBucketPrefix($lat+$value,$lng+$value);
+            $possible_buckets = $this->getBucketPrefix($lat+$value,$lng+$value);
             array_push($all_possible_buckets, $possible_buckets);
         }
+        return $all_possible_buckets;
 
     }
+    public function in_range_($lat,$lng) {
+        $cache = new \utils\cachelib();
+        $shortest_distance = [1000,1000]; //intializing a temp higest value
+        $shortest_distance_coord = []; //cooresponding coordinates for shrotest distance
+        $all_possible_buckets = $this->getAllPossibleBucket($lat,$lng);
+        foreach ($all_possible_buckets as $bucket_prefix) {
+            # code...
+        
+            $prefix =LOCATION_PREFIX.":".$bucket_prefix;
+            $keys = $cache->getKeys($prefix);
+            echo "\nIncoming".$prefix;
+            var_dump($keys);        
+            foreach($keys as $key) {
+                $key = explode(":",$key);
+                $key = array_pop($key);
+                $key = explode(",", $key);
 
+                $lat_key =(float) $key[0];
+                $lng_key = (float)$key[1];
+
+                $max_lat_val = max($lat_key,$lat);
+                $min_lat_val = min($lat_key,$lat);
+
+                $max_lng_val = max($lng_key,$lng);
+                $min_lng_val = min($lng_key,$lng);
+
+                $lat_dist = $max_lat_val - $min_lat_val;
+                $lng_dist = $max_lng_val - $min_lng_val;
+
+                echo "\nThis happens  : ".$lat_dist ." : ".$lng_dist;
+
+                if($lat_dist < $shortest_distance[0]  && $lat_dist >=0 && $lng_dist < $shortest_distance[1]  && $lng_dist >= 0){
+                    $shortest_distance[0] = $lat_dist;
+                    $shortest_distance[1] = $lng_dist;
+
+                    $shortest_distance_coord[0] = $lat_key;
+                    $shortest_distance_coord[1] = $lng_key;
+                }
+            }
+        }
+        if($shortest_distance[0] < 0.0366 && $shortest_distance[1] < 0.0254) {
+            // return json_encode($shortest_distance_coord);
+            echo "I will find";
+            return $this->getFromCache($shortest_distance_coord[0],$shortest_distance_coord[1],$bucket_prefix );
+        }
+        return false;
+    }
 
 
 }

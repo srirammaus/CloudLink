@@ -46,28 +46,21 @@ class getWeather {
             $location = $weather->getCoordinates()["location"] ?? NULL;
             $bucket_prefix = $weather->getBucketPrefix($lat, $lng);
             if(isset($lat) && isset($lng)) {
-                $getCached = $weather->getFromCache($lat,$lng,$bucket_prefix);
+                //get from cache // then in range //top cities
+                
+                $getCached = $weather->getFromCache($lat,$lng,$bucket_prefix) ?:  $weather->in_range($lat,$lng)  ?: $weather->getFromCache($lat,$lng) ; //
+                // echo "-------------------";
+                // var_dump($getCached);
+                // echo "-------------------------";
                 if(empty($getCached)){
                     $response = $weather->fetchWeatherOndemand();
                     if($response) {
+                        // echo "Unfortunatelly this happend";
                         $this->updateQueue($lat,$lng);
                         return json_decode($response);
                     }
                 }else {
-                    if($weather->isJson($getCached)) {
-                        return json_decode($getCached);
-                    }else {
-                        
-                        $get_reference_coord = explode(":",$getCached);
-                        $get_reference_coord = $get_reference_coord[1];
-                        $get_reference_coord= explode(",",$get_reference_coord);
-                        $getCached = $weather->getFromCache($get_reference_coord[0],$get_reference_coord[1],$bucket_prefix);
-                        if(!empty($getCached)){
-                            return json_decode($getCached);
-                        }
-                        return false;
-                        
-                    }
+                    return $this->getReferenced_data($getCached,$weather); //,$bucket_prefix
                 }
 
             }else {
@@ -78,6 +71,28 @@ class getWeather {
             throw new \serverException(ErrorCode:"2000");
         }
         return false;
+
+    }
+    public function getReferenced_data($getCached,$weather) { //$bucket_prefix
+        if($weather->isJson($getCached)) {
+            /** make a check for too many concurrent request , that json it will come here */
+            return json_decode($getCached);
+        }else {
+     
+            $get_reference_coord = explode(":",$getCached);
+            $get_reference_coord = $get_reference_coord[1];
+
+            $get_reference_coord= explode(",",$get_reference_coord);
+            $bucket_prefix = $weather->getBucketPrefix($get_reference_coord[0],$get_reference_coord[1]);
+            $getCached = $weather->getFromCache($get_reference_coord[0],$get_reference_coord[1],$bucket_prefix);
+
+            if(!empty($getCached)){
+                return $this->getReferenced_data($getCached,$weather); //$bucket_prefix
+            }else {
+                return false;
+
+            }
+        }
 
     }
     /**

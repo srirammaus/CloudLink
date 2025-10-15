@@ -414,6 +414,18 @@ class cachelib  {
 
     }
 
+    public function getKeys(string $prefix = "default") {
+        try{
+            $prefix = $prefix.":";
+            $result = $this->redis->keys($prefix."*");
+            return $result;
+        }catch (\RedisException $e) {
+            logg(file:"server_err",exception_: $e);
+            return false;
+
+        }
+    }   
+
 
 
 }

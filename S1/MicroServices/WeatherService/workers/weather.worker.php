@@ -54,7 +54,7 @@ class Weather_worker {
             echo $safe_limit;
             $responses = $weather->fetchNearbyData($merged_coords,$safe_limit);
             if($responses){
-                $bucket_prefix = $weather->getBucketPrefix($coord[0],$coord[1]);
+                
                 $resp = $weather->response_stack;
                 // print(json_encode($resp));
                 $count = 0;
@@ -74,6 +74,7 @@ class Weather_worker {
                     // }
                     $lat_key = $merged_coords[$count]["latitude"];
                     $lng_key = $merged_coords[$count]["longitude"];
+                    $bucket_prefix = $weather->getBucketPrefix($lat_key,$lng_key);
                     if(!$weather->isCached($lat_key,$lng_key,$bucket_prefix) && !$weather->isCached($lat_key,$lng_key)){
                         //cache them
                         if($safe_limit < $count){
