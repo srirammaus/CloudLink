@@ -4,23 +4,23 @@ Cloudlink is a modular, microservice-based platform 🌐 designed to manage user
 
 📚 Table of Contents
 
-API Gateway
+    API Gateway
 
-User Service
+    User Service
 
-Notification Service
+    Notification Service
 
-Platform Service
+    Platform Service
 
-Weather Service
+    Weather Service
 
-Unified Service
+    Unified Service
 
-Python IoT Server
+    Python IoT Server
 
-Python Chat & Metrics Server
+    Python Chat & Metrics Server
 
-Deployment
+    Deployment
 
 Future Plans
 
@@ -28,126 +28,126 @@ Future Plans
 
 The API Gateway is the entry point for all client requests 🌟. It is fully custom-built 🛠️ and includes:
 
-🔑 Token-based authentication & session management
+    🔑 Token-based authentication & session management
 
-⏱️ Rate limiting using a bucket algorithm
+    ⏱️ Rate limiting using a bucket algorithm
 
-🗂️ Request aggregation & caching for high-performance
+    🗂️ Request aggregation & caching for high-performance
 
-🛡️ Route authentication & validation
+    🛡️ Route authentication & validation
 
-📝 Logging and monitoring
+    📝 Logging and monitoring
 
-🔗 Microservice routing (User, Notification, Platform, Weather, Unified)
+    🔗 Microservice routing (User, Notification, Platform, Weather, Unified)
 
-Note: All requests pass through the gateway, ensuring a single point for security, caching, and throttling 🔒⚡.
+    Note: All requests pass through the gateway, ensuring a single point for security, caching, and throttling 🔒⚡.
 
 👤 User Service
 
-Handles all user-related operations including authentication 🔑 and account management:
+    Handles all user-related operations including authentication 🔑 and account management:
 
-🔐 Login / Logout
+    🔐 Login / Logout
 
-🛠️ Change password, email, phone number
+    🛠️ Change password, email, phone number
 
-✅ Account verification & multi-factor authentication
+    ✅ Account verification & multi-factor authentication
 
-🎯 Custom CAPTCHA validation
+    🎯 Custom CAPTCHA validation
 
-🕒 Session management
+    🕒 Session management
 
-📊 Optional: Activity logging, account lockout & audit trails
+    📊 Optional: Activity logging, account lockout & audit trails
 
-This service is designed to be secure, scalable, and extendable 🏗️.
+    This service is designed to be secure, scalable, and extendable 🏗️.
 
 📣 Notification Service
 
-Responsible for notifying users about system events 💌:
+    Responsible for notifying users about system events 💌:
 
-📧 Send emails after registration, password change, or notifications from the platform
+    📧 Send emails after registration, password change, or notifications from the platform
 
-🔔 Push notifications to Cloudlink frontend via WebSocket or Kafka (planned)
+    🔔 Push notifications to Cloudlink frontend via WebSocket or Kafka (planned)
 
-📱 Planned SMS notifications
+    📱 Planned SMS notifications
 
-⚡ Event-driven: listens to messages from User Service or other microservices
+    ⚡ Event-driven: listens to messages from User Service or other microservices
 
-🖥️ Platform Service
+    🖥️ Platform Service
 
-Provides all necessary dashboard content 📊:
+    Provides all necessary dashboard content 📊:
 
-🖼️ Centralized dashboard for users
+        🖼️ Centralized dashboard for users
 
-📊 Data aggregation & visualization
+        📊 Data aggregation & visualization
 
-🔗 API endpoints for frontend consumption
+        🔗 API endpoints for frontend consumption
 
-⚙️ Provides content such as metrics, alerts, and reports
+        ⚙️ Provides content such as metrics, alerts, and reports
 
 🌤️ Weather Service
 
 Handles geospatial weather data 🌍:
 
-🗄️ Redis-based caching for fast retrieval
+    🗄️ Redis-based caching for fast retrieval
 
-📍 Nearby coordinate search, top cities, and popular datasets
+    📍 Nearby coordinate search, top cities, and popular datasets
 
-📈 Dataset of 10,000+ locations integrated with OpenWeatherMap
+    📈 Dataset of 10,000+ locations integrated with OpenWeatherMap
 
-🧭 Custom geospatial algorithm using Haversine formula to calculate distances & proximity
+    🧭 Custom geospatial algorithm using Haversine formula to calculate distances & proximity
 
-⚡ Provides APIs for real-time weather & historical data
+    ⚡ Provides APIs for real-time weather & historical data
 
-Haversine Algorithm: Calculates shortest distance between two points on Earth 🌎, essential for hyperlocal weather analysis 🌡️.
+    Haversine Algorithm: Calculates shortest distance between two points on Earth 🌎, essential for hyperlocal weather analysis 🌡️.
 
 🔗 Unified Service
 
-Combines data from multiple sources 🌐:
+    Combines data from multiple sources 🌐:
 
-🛰️ Integrates hyperlocal IoT data (planned) & Weather Service data
+    🛰️ Integrates hyperlocal IoT data (planned) & Weather Service data
 
-📊 Serves combined insights to Platform Service
+    📊 Serves combined insights to Platform Service
 
-⚡ Prepares aggregated data for analytics & notifications
+    ⚡ Prepares aggregated data for analytics & notifications
 
 🛠️ Python IoT Server
 
-Collects and processes IoT sensor data 🤖:
+    Collects and processes IoT sensor data 🤖:
 
-📡 Receives data from local devices
+    📡 Receives data from local devices
 
-🧹 Performs initial data cleaning & transformation
+    🧹 Performs initial data cleaning & transformation
 
-💾 Stores data in a format consumable by Unified Service
+    💾 Stores data in a format consumable by Unified Service
 
 💬 Python Chat & Metrics Server
 
-Handles real-time communication & monitoring ⚡:
+    Handles real-time communication & monitoring ⚡:
 
-💬 Chat server for frontend interactions
+    💬 Chat server for frontend interactions
 
-📊 EDA (Exploratory Data Analysis) of incoming metrics
+    📊 EDA (Exploratory Data Analysis) of incoming metrics
 
-📈 Metrics aggregation for Prometheus
+    📈 Metrics aggregation for Prometheus
 
-🐳 Dockerized for easy deployment & scaling
+    🐳 Dockerized for easy deployment & scaling
 
 🚀 Deployment
 
-🐳 All microservices containerized using Docker
+    🐳 All microservices containerized using Docker
 
-🔗 Services communicate asynchronously via Kafka & WebSockets
+    🔗 Services communicate asynchronously via Kafka & WebSockets
 
-🗄️ Redis for caching & session storage
+    🗄️ Redis for caching & session storage
 
-🌐 API Gateway serves as the unified entry point for all requests
+    🌐 API Gateway serves as the unified entry point for all requests
 
 🌟 Future Plans
 
-🛰️ Hyperlocal IoT integration for enhanced environmental insights
+    🛰️ Hyperlocal IoT integration for enhanced environmental insights
 
-📱 SMS notification service for mobile users
+    📱 SMS notification service for mobile users
 
-📊 Advanced analytics dashboard in Platform Service
+    📊 Advanced analytics dashboard in Platform Service
 
-🤖 Expand Unified Service to include predictive analytics using AI/ML
+    🤖 Expand Unified Service to include predictive analytics using AI/ML
