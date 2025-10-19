@@ -14,7 +14,7 @@ vendor/
 # Ignore all resources folders recursively
 resources/
 
-unused resources/
+unused-resources/
 
 # Ignore uploads folder at specific location
 /S1/MicroServices/TestService/uploads/
