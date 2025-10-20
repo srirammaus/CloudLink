@@ -1,5 +1,6 @@
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 import PageMeta from "../../components/common/PageMeta";
+import HomeInterface from "../../components/Home/HomeInterface";
 export default function Home() {
     return (<>
       <PageMeta title="CloudLink | The Real Technology" description="The CloudLink is application developed by sriram marippan, This application maily used integrate multiple tools, currently it is having Unfied Weather Service"/>
@@ -15,7 +16,9 @@ export default function Home() {
         </div> */}
 
         <div className="col-span-12">
-          <StatisticsChart />
+          {/* <StatisticsChart />
+           */}
+           <HomeInterface/>
         </div>
         {/*
                 <div className="col-span-12 xl:col-span-5">

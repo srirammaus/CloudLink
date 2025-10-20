@@ -18,6 +18,7 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import ControlCentre from "./pages/Dashboard/ControlCentre";
 export default function App() {
     return (<>
       <Router>
@@ -28,7 +29,7 @@ export default function App() {
             <Route index path="/" element={<Home />}/>
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />}/>
+            <Route path="/controlcentre" element={<ControlCentre />}/>
             <Route path="/calendar" element={<Calendar />}/>
             <Route path="/blank" element={<Blank />}/>
 

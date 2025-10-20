@@ -1,3 +1,4 @@
+// #788493 - this is icon color, if you want more icon search in lucide icons with this color - sriram
 import { ReactComponent as PlusIcon } from "./plus.svg?react";
 import { ReactComponent as CloseIcon } from "./close.svg?react";
 import { ReactComponent as BoxIcon } from "./box.svg?react";
@@ -56,4 +57,10 @@ import { ReactComponent as AlertHexaIcon } from "./alert-hexa.svg?react";
 import { ReactComponent as ErrorHexaIcon } from "./info-hexa.svg?react";
 import { ReactComponent as HomeIcon } from "./home.svg?react";
 import { ReactComponent as SettingsIcon } from "./settings.svg?react";
-export { ErrorHexaIcon, AlertHexaIcon, MoreDotIcon, DownloadIcon, SettingsIcon,FileIcon,HomeIcon, GridIcon, AudioIcon, VideoIcon, BoltIcon, PlusIcon, BoxIcon, CloseIcon, CheckCircleIcon, AlertIcon, InfoIcon, ErrorIcon, ArrowUpIcon, FolderIcon, ArrowDownIcon, ArrowRightIcon, GroupIcon, BoxIconLine, ShootingStarIcon, DollarLineIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, PencilIcon, CheckLineIcon, CloseLineIcon, ChevronDownIcon, PaperPlaneIcon, EnvelopeIcon, LockIcon, UserIcon, CalenderIcon, EyeIcon, EyeCloseIcon, TimeIcon, CopyIcon, ChevronLeftIcon, UserCircleIcon, TaskIcon, ListIcon, TableIcon, PageIcon, PieChartIcon, BoxCubeIcon, PlugInIcon, DocsIcon, MailIcon, HorizontaLDots, ChevronUpIcon, ChatIcon, AngleLeftIcon, AngleRightIcon, };
+import { ReactComponent as HeatMapper} from "./heatmapper.svg?react";
+import { ReactComponent as UltraSound} from "./ultrasound.svg?react";
+import { ReactComponent as ChatBot} from "./chatbot.svg?react";
+import { ReactComponent as BaseStation} from "./basestation.svg?react";
+import { ReactComponent as SpectroScopy} from "./spectroscopy.svg?react";
+import { ReactComponent as RefershIcon} from "./refresh.svg?react"
+export { ErrorHexaIcon, AlertHexaIcon, MoreDotIcon,HeatMapper,RefershIcon,SpectroScopy,UltraSound,ChatBot,BaseStation, DownloadIcon, SettingsIcon,FileIcon,HomeIcon, GridIcon, AudioIcon, VideoIcon, BoltIcon, PlusIcon, BoxIcon, CloseIcon, CheckCircleIcon, AlertIcon, InfoIcon, ErrorIcon, ArrowUpIcon, FolderIcon, ArrowDownIcon, ArrowRightIcon, GroupIcon, BoxIconLine, ShootingStarIcon, DollarLineIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, PencilIcon, CheckLineIcon, CloseLineIcon, ChevronDownIcon, PaperPlaneIcon, EnvelopeIcon, LockIcon, UserIcon, CalenderIcon, EyeIcon, EyeCloseIcon, TimeIcon, CopyIcon, ChevronLeftIcon, UserCircleIcon, TaskIcon, ListIcon, TableIcon, PageIcon, PieChartIcon, BoxCubeIcon, PlugInIcon, DocsIcon, MailIcon, HorizontaLDots, ChevronUpIcon, ChatIcon, AngleLeftIcon, AngleRightIcon, };

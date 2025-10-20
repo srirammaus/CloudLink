@@ -1,27 +1,28 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 // Assume these icons are imported from an icon library
-import { ChevronDownIcon, GridIcon, HorizontaLDots,PlugInIcon,BoxCubeIcon,HomeIcon,PieChartIcon, CalenderIcon, PlusIcon, TimeIcon, PageIcon, EyeCloseIcon, MoreDotIcon, AlertHexaIcon, BoltIcon, SettingsIcon } from "../icons";
+import { ChevronDownIcon, GridIcon, HorizontaLDots,PlugInIcon,BoxCubeIcon,HomeIcon,PieChartIcon, CalenderIcon, PlusIcon, TimeIcon, PageIcon, EyeCloseIcon, MoreDotIcon, AlertHexaIcon, BoltIcon, SettingsIcon, ChatBot, BaseStation, HeatMapper, UltraSound, SpectroScopy } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 const navItems = [
     {
-        icon: <BoltIcon />,
+        icon: <HomeIcon />,
         name: "Dashboard",
         // path:"/",
-        subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+        subItems: [{ name: "Home", path: "/", pro: false }],
     },
     {
         icon: <SettingsIcon/>,
         name: "Control Centre",
-        path:"/",
-        subItems: [],
+        path:"/controlcentre",
+        // subItems: [],
     },
     {
-        icon: <PlugInIcon/>,
+        icon: <ChatBot/>,
         name: "AI Assistant",
-        path:"/",
-        subItems: [],
+        path:"/calendar",
+        // subItems: [], //integrate free chatbot , and our own chat servers
     },
     // {
     //   icon: <CalenderIcon />,
@@ -54,67 +55,52 @@ const navItems = [
 ];
 const othersItems = [
 {
-  icon:<GridIcon/>,
+  icon:<BaseStation/>,
   // below is the device name , consider this as Device -1
   name: "Base station",
   subItems: [
-    { name: "Line Chart", path: "/", pro: false },
-    { name: "Bar Chart", path: "/", pro: false },
+    // below should provide a option that shows do you want see only combined or sperate
+    { name: "Unified Weather", path: "/alrerts", pro: false },
+    // { name: "", path: "/avatar", pro: false },
   ]
   
 },
 {
   //using the temperature sensor
-  icon:<GridIcon/>,
+  icon:<HeatMapper/>,
   name: "Crowd Heat Mapper",
   subItems: [
-    { name: "Line Chart", path: "/", pro: false },
-    { name: "Bar Chart", path: "/", pro: false },
+    // Hyperlocal Crowd Frequency
+    { name: "Crowd Frequency ", path: "/signin", pro: false },
+    // { name: "Bar Chart", path: "/signup", pro: false },
   ],
 },
 {
   // using ultrasonic sensor
-  icon:<GridIcon/>,
+  icon:<UltraSound/>,
   name: "Object Range Detector",
   subItems: [
-    { name: "Line Chart", path: "/", pro: false },
-    { name: "Bar Chart", path: "/", pro: false },
+    // Animated-Visuals-Objects
+    { name: "Object Visuals", path: "/line-chart", pro: false },
+    // { name: "Bar Chart", path: "/bar-chart", pro: false },
   ],
 },
 {
   //use any electromagnetic sensor
-  icon:<GridIcon/>,
+  icon:<SpectroScopy/>,
   name: "Spectroscopy",
   subItems: [
-    { name: "Line Chart", path: "/", pro: false },
-    { name: "Bar Chart", path: "/", pro: false },
+    // Animated-Visuals-Anomalies
+    { name: "Anomaly Visuals", path: "/basic-tables", pro: false },
+    // { name: "Bar Chart", path: "/form-elements", pro: false },
   ]
 },
-   {
-        icon: <PageIcon />,
-        name: "PDF converter",
-        subItems: [{ name: "Converter", path: "/", pro: false }],
-    },
-// {
-//   icon: <BoxCubeIcon />,
-//   name: "UI Elements",
-//   subItems: [
-//     { name: "Alerts", path: "/alerts", pro: false },
-//     { name: "Avatar", path: "/avatars", pro: false },
-//     { name: "Badge", path: "/badge", pro: false },
-//     { name: "Buttons", path: "/buttons", pro: false },
-//     { name: "Images", path: "/images", pro: false },
-//     { name: "Videos", path: "/videos", pro: false },
-//   ],
-// },
-// {
-//   icon: <PlugInIcon />,
-//   name: "Authentication",
-//   subItems: [
-//     { name: "Sign In", path: "/signin", pro: false },
-//     { name: "Sign Up", path: "/signup", pro: false },
-//   ],
-// },
+{
+    icon: <PageIcon />,
+    name: "PDF converter",
+    subItems: [{ name: "Converter", path: "/videos", pro: false }],
+},
+
 ];
 const AppSidebar = () => {
     const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -126,17 +112,19 @@ const AppSidebar = () => {
     const isActive = useCallback((path) => location.pathname === path, [location.pathname]);
     useEffect(() => {
         let submenuMatched = false;
-        ["main", "others"].forEach((menuType) => {
+        ["main", "tools_devices"].forEach((menuType) => {
             const items = menuType === "main" ? navItems : othersItems;
             items.forEach((nav, index) => {
                 if (nav.subItems) {
                     nav.subItems.forEach((subItem) => {
                         if (isActive(subItem.path)) {
+
                             setOpenSubmenu({
                                 type: menuType,
                                 index,
                             });
                             submenuMatched = true;
+
                         }
                     });
                 }
@@ -167,6 +155,7 @@ const AppSidebar = () => {
             return { type: menuType, index };
         });
     };
+      // console.log("Is active without rendering.."+subItem.name)
     
     const renderMenuItems = (items, menuType) => (<ul className="flex flex-col gap-4">
       {items.map((nav, index) => (<li key={nav.name}>
@@ -255,7 +244,7 @@ const AppSidebar = () => {
               <h2 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
             ? "lg:justify-center"
             : "justify-start"}`}>
-                {isExpanded || isHovered || isMobileOpen ? ("Others") : (<HorizontaLDots />)}
+                {isExpanded || isHovered || isMobileOpen ? ("tools & devices") : (<HorizontaLDots />)}
               </h2>
               {renderMenuItems(othersItems, "others")}
             </div>
