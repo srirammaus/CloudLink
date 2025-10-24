@@ -19,6 +19,9 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ControlCentre from "./pages/Dashboard/ControlCentre";
+import  ChatBot  from "./pages/Dashboard/ChatBot";
+import WeatherForecast from "./pages/service-tools/WeatherForecast";
+import UnifiedWeather from "./pages/service-tools/UnifiedWeather";
 export default function App() {
     return (<>
       <Router>
@@ -27,10 +30,10 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />}/>
-
-            {/* Others Page */}
             <Route path="/controlcentre" element={<ControlCentre />}/>
-            <Route path="/calendar" element={<Calendar />}/>
+            <Route path="/assistant" element={<ChatBot />}/>
+            {/* Others Page */}
+
             <Route path="/blank" element={<Blank />}/>
 
             {/* Forms */}
@@ -50,6 +53,12 @@ export default function App() {
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />}/>
             <Route path="/bar-chart" element={<BarChart />}/>
+
+            {/* service and tools */}
+            <Route path="/weatherforecast" element={<WeatherForecast/>}/>
+            <Route path="/unifiedweather" element={<UnifiedWeather/>}/>
+
+
           </Route>
 
           {/* Auth Layout */}

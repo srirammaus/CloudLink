@@ -17,7 +17,7 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
-
+import { useNavigate } from "react-router";
 export default function ControlCentreInterface() {
   const { isOpen, openModal, closeModal } = useModal();
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -75,10 +75,13 @@ export default function ControlCentreInterface() {
       mqttTopic: "cloudlink/devices/BS-001/data",
     },
   };
-
+//   use this below example for reference you will understand and ()-implicit return , return -direct return dont confused
+// const d = Array.from({length:3}).map((elem,index)=>{
+//     return "sriam" 
+// })
   const devices = Array.from({ length: 3 }).map((_, i) => ({
     ...baseDevice,
-    DeviceID: `BS-00${i + 1}`,
+    // DeviceID: `BS-00${i + 1}`,
   }));
 
   const renderSection = (title, dataObj) => (
@@ -100,7 +103,8 @@ export default function ControlCentreInterface() {
   // When "Edit" is clicked
   const handleEdit = (device) => {
     setSelectedDevice(device);
-    setEditedConfig(device.writable_configuration);
+    const allowedEdits = Object.assign({},device.enumerable_configuration); //add whatever you want later
+    setEditedConfig(allowedEdits);
     openModal();
   };
 
@@ -122,9 +126,9 @@ export default function ControlCentreInterface() {
       {devices.map((device, index) => (
         <div
           key={index}
-          className="p-6 border rounded-2xl bg-white dark:bg-gray-900 dark:border-gray-800"
-        >
-          <h3 className="text-xl font-bold mb-3">{device.DeviceName}</h3>
+          className="p-6 border rounded-2xl bg-white dark:bg-gray-900 dark:border-gray-800">
+            
+          <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-white/90">{device.DeviceName}</h3>
           {renderSection("Basic Info", {
             ID: device.DeviceID,
             Type: device.DeviceType,

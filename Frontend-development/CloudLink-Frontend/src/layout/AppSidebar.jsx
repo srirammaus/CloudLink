@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 // Assume these icons are imported from an icon library
-import { ChevronDownIcon, GridIcon, HorizontaLDots,PlugInIcon,BoxCubeIcon,HomeIcon,PieChartIcon, CalenderIcon, PlusIcon, TimeIcon, PageIcon, EyeCloseIcon, MoreDotIcon, AlertHexaIcon, BoltIcon, SettingsIcon, ChatBot, BaseStation, HeatMapper, UltraSound, SpectroScopy } from "../icons";
+import { ChevronDownIcon, GridIcon, HorizontaLDots,PlugInIcon,BoxCubeIcon,HomeIcon,PieChartIcon, CalenderIcon, PlusIcon, TimeIcon, PageIcon, EyeCloseIcon, MoreDotIcon, AlertHexaIcon, BoltIcon, SettingsIcon, ChatBot, BaseStation, HeatMapper, UltraSound, SpectroScopy, WeatherIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 const navItems = [
@@ -21,7 +21,7 @@ const navItems = [
     {
         icon: <ChatBot/>,
         name: "AI Assistant",
-        path:"/calendar",
+        path:"/assistant",
         // subItems: [], //integrate free chatbot , and our own chat servers
     },
     // {
@@ -54,13 +54,24 @@ const navItems = [
     // },
 ];
 const othersItems = [
+  {
+  icon:<WeatherIcon/>,
+  // below is the device name , consider this as Device -1
+  name: "Weather Forecasting",
+  subItems: [
+    // below should provide a option that shows do you want see only combined or sperate
+    { name: "Weather", path: "/weatherforecast", pro: false },
+    // { name: "", path: "/avatar", pro: false },
+  ]
+  
+},
 {
   icon:<BaseStation/>,
   // below is the device name , consider this as Device -1
   name: "Base station",
   subItems: [
     // below should provide a option that shows do you want see only combined or sperate
-    { name: "Unified Weather", path: "/alrerts", pro: false },
+    { name: "Unified Weather", path: "/unifiedweather", pro: false },
     // { name: "", path: "/avatar", pro: false },
   ]
   
@@ -81,7 +92,7 @@ const othersItems = [
   name: "Object Range Detector",
   subItems: [
     // Animated-Visuals-Objects
-    { name: "Object Visuals", path: "/line-chart", pro: false },
+    { name: "Object Visuals", path: "/bar-chart", pro: false },
     // { name: "Bar Chart", path: "/bar-chart", pro: false },
   ],
 },
