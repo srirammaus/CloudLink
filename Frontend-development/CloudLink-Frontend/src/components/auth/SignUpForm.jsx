@@ -4,8 +4,12 @@ import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import TextAreaInput from "../form/form-elements/TextAreaInput";
+import TextArea from "../form/input/TextArea";
 export default function SignUpForm() {
+    const [message, setMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [showCPassword,setShowCPassword] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
     return (<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="w-full max-w-md mx-auto mb-5 sm:pt-10">
@@ -58,22 +62,29 @@ export default function SignUpForm() {
                   {/* <!-- First Name --> */}
                   <div className="sm:col-span-1">
                     <Label>
-                      First Name<span className="text-error-500">*</span>
+                      Email<span className="text-error-500">*</span>
                     </Label>
-                    <Input type="text" id="fname" name="fname" placeholder="Enter your first name"/>
+                    <Input type="text" id="Email" name="Email" placeholder="Enter your first name"/>
                   </div>
                   {/* <!-- Last Name --> */}
                   <div className="sm:col-span-1">
                     <Label>
-                      Last Name<span className="text-error-500">*</span>
+                      Phone<span className="text-error-500">*</span>
                     </Label>
-                    <Input type="text" id="lname" name="lname" placeholder="Enter your last name"/>
+                    <Input type="text" id="phone" name="phone" placeholder="Enter your last name"/>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <Label>
+                      secondary Email<span className="text-error-500">*</span>
+                    </Label>
+                    <Input type="text" id="secondary-email" name="secondary-email" placeholder="Enter your last name"/>
+                    
                   </div>
                 </div>
                 {/* <!-- Email --> */}
-                <div>
+                <div >
                   <Label>
-                    Email<span className="text-error-500">*</span>
+                    Username<span className="text-error-500">*</span>
                   </Label>
                   <Input type="email" id="email" name="email" placeholder="Enter your email"/>
                 </div>
@@ -88,6 +99,30 @@ export default function SignUpForm() {
                       {showPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
                     </span>
                   </div>
+                </div>
+                {/* confirm password */}
+                <div>
+                  <Label>
+                    Password<span className="text-error-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input placeholder="Enter your password" type={showCPassword ? "text" : "password"}/>
+                    <span onClick={() => setShowCPassword(!showCPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
+                      {showPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
+                    </span>
+                  </div>
+                </div>
+                 <div>
+                  <Label>
+                    Bio<span className="text-error-500">*</span>
+                  </Label>
+                    <TextArea value={message} onChange={(value) => setMessage(value)} rows={6}/>
+                </div>
+                  <div >
+                  <Label>
+                    Captcha<span className="text-error-500">*</span>
+                  </Label>
+                  <Input type="text" id="captcha" name="captcha" placeholder="Enter Captcha" />
                 </div>
                 {/* <!-- Checkbox --> */}
                 <div className="flex items-center gap-3">

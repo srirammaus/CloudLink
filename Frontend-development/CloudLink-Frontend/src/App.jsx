@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
-import UserProfiles from "./pages/UserProfiles";
+import UserProfiles from "./pages/Account/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
 import Images from "./pages/UiElements/Images";
 import Alerts from "./pages/UiElements/Alerts";
@@ -22,6 +22,7 @@ import ControlCentre from "./pages/Dashboard/ControlCentre";
 import  ChatBot  from "./pages/Dashboard/ChatBot";
 import WeatherForecast from "./pages/service-tools/WeatherForecast";
 import UnifiedWeather from "./pages/service-tools/UnifiedWeather";
+import AccountSettings from "./pages/Account/AccountSettings";
 export default function App() {
     return (<>
       <Router>
@@ -32,9 +33,14 @@ export default function App() {
             <Route index path="/" element={<Home />}/>
             <Route path="/controlcentre" element={<ControlCentre />}/>
             <Route path="/assistant" element={<ChatBot />}/>
-            {/* Others Page */}
+            {/* Account settings*/}
 
-            <Route path="/blank" element={<Blank />}/>
+          
+            <Route path="/accountsettings" element={<AccountSettings />}/>
+            <Route path="/editprofile" element={<UserProfiles />}/>
+
+
+
 
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />}/>

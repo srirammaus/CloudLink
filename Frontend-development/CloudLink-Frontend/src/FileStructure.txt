@@ -1,0 +1,34 @@
+| Category                  | Parameter           | Description                               |
+| ------------------------- | ------------------- | ----------------------------------------- |
+| 🔐 **Authentication**     | `email`             | Primary email used for login and recovery |
+|                           | `password`          | Change password or enable 2FA             |
+|                           | `twoFactorAuth`     | Enable/disable 2-factor authentication    |
+|                           | `backupCodes`       | Download or regenerate recovery codes     |
+| 🧩 **Security & Privacy** | `sessionManagement` | View and revoke active sessions/devices   |
+|                           | `loginHistory`      | Show previous login timestamps/IPs        |
+|                           | `dataSharing`       | Toggle analytics or marketing consent     |
+|                           | `accountVisibility` | Public / private account toggle           |
+| ⚙️ **Preferences**        | `language`          | Default app language                      |
+|                           | `theme`             | Light / dark / system                     |
+|                           | `notifications`     | Email / SMS / push preferences            |
+| 🧾 **Account Actions**    | `deleteAccount`     | Permanent deletion option                 |
+|                           | `deactivateAccount` | Temporary suspension                      |
+|                           | `exportData`        | Download account data (GDPR compliance)   |
+
+edit profile
+| Category                       | Parameter                                    | Description                                     |
+| ------------------------------ | -------------------------------------------- | ----------------------------------------------- |
+| 🪪 **Basic Info**              | `firstName`, `lastName`                      | User’s display name                             |
+|                                | `username`                                   | Public handle or nickname                       |
+|                                | `profilePhoto`                               | Avatar / profile picture                        |
+|                                | `coverPhoto`                                 | Header or background image                      |
+| 📬 **Contact Info**            | `secondaryEmail`                             | Alternative email for notifications             |
+|                                | `phone`                                      | Contact number (optional public/private toggle) |
+|                                | `website`                                    | Personal or company URL                         |
+| 🏢 **Professional / Personal** | `bio`                                        | Short about text                                |
+|                                | `occupation`                                 | Job title or role                               |
+|                                | `organization`                               | Company or school                               |
+|                                | `location`                                   | City, state, or country                         |
+| 🌐 **Social Links**            | `github`, `linkedin`, `twitter`, `instagram` | Links to external profiles                      |
+| 🎨 **Appearance / Extras**     | `themePreference`                            | (Optional) profile-specific theme               |
+|                                | `statusMessage`                              | Custom “mood” or tagline                        |

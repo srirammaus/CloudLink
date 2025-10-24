@@ -10,19 +10,43 @@ export default function WeatherForecast() {
       const [metricsArr,setMeticsArr] = useState([])
       const [isOpen, setIsOpen] = useState(false);
       //cloud and humidity has mutual units
-      const metrics = [
-      "Temperature (°C)", 
-      "Humidity (%)",
-        "Rainfall (mm)",
-        "Snow Depth (cm)",
-        "Wind Speed (m/s)",
-        "Wind Direction (°)",
-        "Pressure (hPa)",
-        "Visibility (km)",
-        "Air Pressure (kPa)",
-        "Weather Code",
-        "Cloud (%)",
-      ]
+const metrics = [
+  "temperature_2m",
+  "apparent_temperature",
+  "temperature_80m",
+  "temperature_120m",
+  "temperature_180m",
+  "dew_point_2m",
+  "relative_humidity_2m",
+  "vapour_pressure_deficit", // Humidity
+  "cloud_cover",
+  "cloud_cover_low",
+  "cloud_cover_mid",
+  "cloud_cover_high",
+  "precipitation",
+  "precipitation_probability",
+  "rain",
+  "showers",
+  "evapotranspiration",
+  "et0_fao_evapotranspiration",
+  "snowfall",
+  "snow_depth",
+  "wind_speed_10m",
+  "wind_speed_80m",
+  "wind_speed_120m",
+  "wind_speed_180m",
+  "wind_gusts_10m",
+  "wind_direction_10m",
+  "wind_direction_80m",
+  "wind_direction_120m",
+  "wind_direction_180m",
+  "pressure_msl",
+  "surface_pressure",
+  "visibility",
+  "vapour_pressure_deficit", // Air Pressure
+  "weather_code"
+];
+
       const updateMetrics = (metrics) => {
           setDisplayMetrics(metrics)
       }
@@ -96,7 +120,7 @@ export default function WeatherForecast() {
                   <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
               </button>
-              <Dropdown isOpen={isOpen} onClose={closeDropdown} className="flex top-5 left-0 absolute w-[22%] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+              <Dropdown isOpen={isOpen} onClose={closeDropdown} className="flex top-5 left-0 absolute w-[25%] max-h-[45vh] overflow-x-hidden overflow-y-auto flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark custom-scrollbar">
               <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800 dark:text-gray-400  ">
                   {metrics.map((metric,index)=>(
                       <li key={index}>

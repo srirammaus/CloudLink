@@ -246,7 +246,7 @@ class weather {
 
             
         }   
-        return False; //In API phase , else false means throw unknown error occurred
+        return FALSE; //In API phase , else false means throw unknown error occurred
     }
     public function guzzleErr($e) {
         if(method_exists($e,"hasResopnse")){

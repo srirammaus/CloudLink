@@ -48,7 +48,7 @@ function DatesToHrs(arr ) {
 
     return newarr
 }
-export default function WeatherChart({
+export default function UnifiedWeatherChart({
     displayMetrics = [], //defaults
     
 }) {
