@@ -6,6 +6,7 @@ import Label from "../form/Label";
 import TwoFactorAuth from "./TwoFactorAuth";
 import ChangePassword from "./ChangePassword";
 import { useState } from "react";
+import SessionManagement from "./SessionManagement";
 
 export default function Settings() {
     const [selectedIndex,setSelectedIndex] = useState(false);
@@ -34,7 +35,7 @@ export default function Settings() {
             case 1:
                 return <ChangePassword isOpen={isOpen} openModal={openModal} closeModal={closeModal} />;
             case 2:
-                return  <></> ;
+                return  <SessionManagement isOpen={isOpen} openModal={openModal} closeModal={closeModal}/>;
             case 3:
                 return  <></> ;
             default:
