@@ -7,6 +7,7 @@ import Checkbox from "../form/input/Checkbox";
 import TextAreaInput from "../form/form-elements/TextAreaInput";
 import TextArea from "../form/input/TextArea";
 export default function SignUpForm() {
+    const limitCount = 50;
     const [message, setMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showCPassword,setShowCPassword] = useState(false);
@@ -116,7 +117,7 @@ export default function SignUpForm() {
                   <Label>
                     Bio<span className="text-error-500">*</span>
                   </Label>
-                    <TextArea value={message} onChange={(value) => setMessage(value)} rows={6}/>
+                    <TextArea value={message} onChange={(value) =>{ if(value.length < limitCount) return setMessage(value)}} rows={6}/>
                 </div>
                   <div >
                   <Label>
