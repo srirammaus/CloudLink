@@ -121,7 +121,7 @@ const metrics = [
                   <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
               </button>
-              <Dropdown isOpen={isOpen} onClose={closeDropdown} className="flex top-5 left-0 absolute w-[25%] max-h-[45vh] overflow-x-hidden overflow-y-auto flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark custom-scrollbar">
+              <Dropdown isOpen={isOpen} onClose={closeDropdown} className="flex top-5 left-0 absolute w-[25%] max-h-[45vh] overflow-x-hidden overflow-y-auto flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg  custom-scrollbar dark:border-gray-800 dark:bg-gray-dark dark-custom-scrollbar">
               <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800 dark:text-gray-400  ">
                   {metrics.map((metric,index)=>(
                       <li key={index}>

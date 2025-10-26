@@ -11,7 +11,7 @@ import ComponentCard from "../common/ComponentCard";
 import BasicTableOne from "../tables/BasicTables/BasicTableOne";
 
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
-
+import { Monitor,Smartphone,HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Table, TableBody, TableCell,TableHeader,TableRow} from "../ui/table";
 import Badge from "../ui/badge/Badge";
@@ -32,31 +32,11 @@ export default function SessionManagement({isOpen,openModal,closeModal}) {
     const navigate = useNavigate();
     const [verificationStatus,setVerificatioStatus] = useState(false) //error, success
 
-    function handleOnChange (e) {
-      isValidPwd(e);
-
+    function handleOnLogOut () {
+      alert("Logging out")
     }
-    /**
-     * check for len
-     */
-    function isValidPwd(e) {
-      if (e.target.value.length > 8 && e.target.value.length < 30){
-        setDisabled(false)
-          
-      }else {
-        setDisabled(true)
-      }
 
-    }
-       /**
-     * first send then disable for 60s
-     * then again send 
-     * 
-     */
     const pageStack = ["page-1"];
-
-   
-
 
     function goBack (e) {
       e.preventDefault()
@@ -118,7 +98,7 @@ const tableData = [
     id: 1,
     device: {
       deviceName: "Windows Laptop (Chrome)",
-      deviceType: "laptop",
+      deviceType: "unknown",
     },
     location: "Chennai, India",
     loginTime: "25 Oct 2025, 09:10 PM",
@@ -140,7 +120,7 @@ const tableData = [
     id: 3,
     device: {
       deviceName: "MacBook Air (Safari)",
-      deviceType: "laptop",
+      deviceType: "monitor",
     },
     location: "Coimbatore, India",
     loginTime: "25 Oct 2025, 03:18 PM",
@@ -162,14 +142,14 @@ const tableData = [
     id: 5,
     device: {
       deviceName: "Windows Desktop (Firefox)",
-      deviceType: "laptop",
+      deviceType: "monitor",
     },
     location: "Pune, India",
     loginTime: "24 Oct 2025, 08:23 PM",
     status: "Expired",
     ipAddress: "106.51.142.209",
   },
-  {
+    {
     id: 6,
     device: {
       deviceName: "Samsung Galaxy S23 (Chrome)",
@@ -184,7 +164,7 @@ const tableData = [
     id: 7,
     device: {
       deviceName: "Mac Mini (Safari)",
-      deviceType: "laptop",
+      deviceType: "monitor",
     },
     location: "Delhi, India",
     loginTime: "23 Oct 2025, 11:29 AM",
@@ -206,7 +186,7 @@ const tableData = [
     id: 9,
     device: {
       deviceName: "Lenovo ThinkPad (Brave)",
-      deviceType: "laptop",
+      deviceType: "monitor",
     },
     location: "Jaipur, India",
     loginTime: "22 Oct 2025, 06:17 PM",
@@ -224,17 +204,18 @@ const tableData = [
     status: "Signed Out",
     ipAddress: "117.194.21.230",
   },
+
 ];
 
     return (
 
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-         <ComponentCard title="Session Manager">
-          <div className="overflow-hidden rounded-xl bsession bsession-gray-200 bg-white dark:bsession-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
+      <ComponentCard title="Session Manager">
+          <div className="flex h-[70vh]  rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="max-w-full custom-scrollbar dark-custom-scrollbar overflow-auto">
         <Table>
           {/* Table Header */}
-          <TableHeader className="bsession-b bsession-gray-100 dark:bsession-white/[0.05]">
+          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
               <TableCell isHeader className="px-10 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                 Device
@@ -251,6 +232,9 @@ const tableData = [
               <TableCell isHeader className="px-10 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                 IpAddress
               </TableCell>
+              <TableCell isHeader className="px-10 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                Action
+              </TableCell>
             </TableRow>
           </TableHeader>
 
@@ -259,6 +243,9 @@ const tableData = [
             {tableData.map((session) => (<TableRow key={session.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
+                      {session.device.deviceType == "phone" && <Smartphone size={40}  className="text-gray-500 text-theme-xs dark:text-gray-400"/> }
+                      {session.device.deviceType == "unknown" && <HelpCircle size={40} className="text-gray-500 text-theme-xs dark:text-gray-400"/>}
+                      {session.device.deviceType === "monitor" && <Monitor size={40}className="text-gray-500 text-theme-xs dark:text-gray-400"/>}
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                         {session.device.deviceName}
@@ -287,12 +274,15 @@ const tableData = [
                 <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   {session.ipAddress}
                 </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {session.status == "Active" && <Badge size="sm" color="dark">Log Out</Badge>}
+                </TableCell>
               </TableRow>))}
           </TableBody>
         </Table>
       </div>
     </div>
-        </ComponentCard>
+  </ComponentCard>
         
     <div id="page-2" className="page-2 no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 hidden">
           <div className="px-2 pr-14">

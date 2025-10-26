@@ -177,18 +177,39 @@ input[type=number] {
   --z-index-999999: 999999;
 }
 /* global.css */
-.custom-scrollbar::-webkit-scrollbar {
+.dark .dark-custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
+.dark .dark-custom-scrollbar::-webkit-scrollbar-track {
   background: #1e1e2f;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.dark .dark-custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #6b7280;
   border-radius: 10px;
   border: 2px solid #1e1e2f;
 }
+.dark .dark-custom-scrollbar::-webkit-scrollbar-corner {
+  background: #1e1e2f; /* match your dark background */
+}
 
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6; /* light gray track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* medium gray thumb */
+  border-radius: 10px;
+  border: 2px solid #f3f4f6; /* match track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #f3f4f6; /* blend with white background */
+}
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
