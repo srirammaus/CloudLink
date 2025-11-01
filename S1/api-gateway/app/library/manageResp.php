@@ -79,6 +79,9 @@ class manageResp
             // echo $key."=>".$value[0]."\n";
             $this->headers[$key] = $value;
         }
+        $this->headers["Access-Control-Allow-Origin"] = $current_headers["Access-Control-Allow-Origin"][0] ?? "*";
+
+
 
     }
     /**
@@ -95,12 +98,17 @@ class manageResp
      * 
      */
     public function sendResponse() {
+        foreach ($this->headers as $k => $v) {
+            Log::info("SEND HEADER: $k => " . json_encode($v));
+        }
         if(gettype($this->response) == "array") {
             return response()->json($this->response);
         }
         
         // Content-Type is always an array, take first value or null // use this later - 
+        Log::info("This below causing problm");
         $contentType = $this->response->getHeaderLine('Content-Type');
+        Log::info("But i can reach");
         
         if (in_array($contentType,$this->data_types) || $this->isJson($this->body)) { 
             return response($this->body)->withHeaders($this->headers);

@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReqAggregator;
 use App\Http\Controllers\serviceController;
@@ -53,6 +54,7 @@ Route::post("/unifiedWeather/{any}",[serviceController::class,'unifiedWeather'])
 //aggregated api request like dsahboard
 Route::get("/dashboard",[ReqAggregator::class,'seperate_and_unify']);
 // Route::post("/Dashboard/{any}",[ReqAggregator::class,'seperate_and_unify']);
+
 
 
 

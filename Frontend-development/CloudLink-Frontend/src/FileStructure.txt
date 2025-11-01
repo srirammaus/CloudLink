@@ -32,3 +32,9 @@ edit profile
 | 🌐 **Social Links**            | `github`, `linkedin`, `twitter`, `instagram` | Links to external profiles                      |
 | 🎨 **Appearance / Extras**     | `themePreference`                            | (Optional) profile-specific theme               |
 |                                | `statusMessage`                              | Custom “mood” or tagline                        |
+
+
+signup
+sigin in
+weather
+profile

@@ -19,57 +19,61 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ControlCentre from "./pages/Dashboard/ControlCentre";
-import  ChatBot  from "./pages/Dashboard/ChatBot";
+import ChatBot  from "./pages/Dashboard/ChatBot";
 import WeatherForecast from "./pages/service-tools/WeatherForecast";
 import UnifiedWeather from "./pages/service-tools/UnifiedWeather";
 import AccountSettings from "./pages/Account/AccountSettings";
+import ForgotPasswordPg from "./pages/AuthPages/ForgotPasswordPg";
+import {Authenticator} from "./library/Authenticator";
 export default function App() {
     return (<>
       <Router>
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />}/>
-            <Route path="/controlcentre" element={<ControlCentre />}/>
-            <Route path="/assistant" element={<ChatBot />}/>
-            {/* Account settings*/}
+         
+            <Route element={<AppLayout />}>
+              <Route index path="/dashboard" element={<Authenticator><Home/></Authenticator>}/>
+              <Route path="/controlcentre" element={<ControlCentre />}/>
+              <Route path="/assistant" element={<ChatBot />}/>
+              {/* Account settings*/}
 
-          
-            <Route path="/accountsettings" element={<AccountSettings />}/>
-            <Route path="/editprofile" element={<UserProfiles />}/>
-
-
-
-
-            {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />}/>
-
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />}/>
-
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />}/>
-            <Route path="/avatars" element={<Avatars />}/>
-            <Route path="/badge" element={<Badges />}/>
-            <Route path="/buttons" element={<Buttons />}/>
-            <Route path="/images" element={<Images />}/>
-            <Route path="/videos" element={<Videos />}/>
-
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />}/>
-            <Route path="/bar-chart" element={<BarChart />}/>
-
-            {/* service and tools */}
-            <Route path="/weatherforecast" element={<WeatherForecast/>}/>
-            <Route path="/unifiedweather" element={<UnifiedWeather/>}/>
+            
+              <Route path="/accountsettings" element={<AccountSettings />}/>
+              <Route path="/editprofile" element={<UserProfiles />}/>
 
 
+
+
+              {/* Forms */}
+              <Route path="/form-elements" element={<FormElements />}/>
+
+              {/* Tables */}
+              {/* <Route path="/basic-tables" element={<BasicTables />}/> */}
+
+              {/* Ui Elements */}
+              {/* <Route path="/alerts" element={<Alerts />}/>
+              <Route path="/avatars" element={<Avatars />}/>
+              <Route path="/badge" element={<Badges />}/>
+              <Route path="/buttons" element={<Buttons />}/>
+              <Route path="/images" element={<Images />}/>
+              <Route path="/videos" element={<Videos />}/> */}
+
+              {/* Charts */}
+              {/* <Route path="/line-chart" element={<LineChart />}/>
+              <Route path="/bar-chart" element={<BarChart />}/> */}
+
+              {/* service and tools */}
+              <Route path="/weatherforecast" element={<WeatherForecast/>}/>
+              <Route path="/unifiedweather" element={<UnifiedWeather/>}/>
           </Route>
 
+
           {/* Auth Layout */}
+          <Route path="/" element={<SignIn />}/>
           <Route path="/signin" element={<SignIn />}/>
           <Route path="/signup" element={<SignUp />}/>
+          <Route path="/forgotpassword" element={<ForgotPasswordPg/>} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />}/>

@@ -14,6 +14,17 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+.loader {
+  animation: spin 1s infinite linear;
+}
+@keyframes spin {
+    from {
+        transform: scale(1) rotate(0deg);
+    }
+    to {
+        transform: scale(1) rotate(360deg);
+    }
+}
 
 @custom-variant dark (&:is(.dark *));
 

@@ -21,6 +21,7 @@ class signup  {
         public $secondary_email ;
         public $bio ;
         public $avatar ; //
+        public $name;
 
         public $userid;
         public $hashed_pwd;
@@ -170,12 +171,14 @@ class signup  {
     public function createUser (array $requestParams) {
 
         $genLib = new \library\genLib;
-        $vaildparams = ["username","password","email","secondary_email","phone","bio","captcha"]; 
+        $vaildparams = ["username","password","email","name","secondary_email","phone","bio","captcha"]; 
+        logg(file:"backend_log", message: json_encode($requestParams));
         // echo $_SESSION["captcha"];
         if ($genLib->isValidParams($vaildparams,$requestParams)) {
-            if($_SESSION["captcha"] != $requestParams["captcha"]) {  //this == i changed it temoprily !=
+            if($_SESSION["captcha"] == $requestParams["captcha"]) {  //this == i changed it temoprily !=
 
                 $this->username = $requestParams["username"];
+                $this->name = $requestParams["name"];
                 $this->password = $requestParams["password"];
                 $this->phone = $requestParams["phone"];
                 $this->email = $requestParams["email"];
@@ -199,13 +202,13 @@ class signup  {
                             $this->phoneOTP();
 
                             try {
-                                $query = "INSERT INTO users (userid,username,password,pending_email,
+                                $query = "INSERT INTO users (userid,username,name,password,pending_email,
                                 secondary_email,phone,bio,avatar,profile_created,status,
                                 email_token,phone_otp,verified_E,verified_M,
                                 email_token_expiry,phone_otp_expiry
                                 ) 
 
-                                VALUES (:userid,:username,:password,:pending_email,:secondary_email,
+                                VALUES (:userid,:username,:name,:password,:pending_email,:secondary_email,
                                 :phone,:bio,:avatar,:profile_created,:status,
                                 :email_token,:phone_otp,:verified_E,:verified_M,
                                 :email_token_expiry,:phone_otp_expiry)";
@@ -213,6 +216,7 @@ class signup  {
                                 $prepared_statement = $this->getConn()->prepare($query);
                                 $prepared_statement->bindParam(":userid",$this->userid);
                                 $prepared_statement->bindParam(":username",$this->username);
+                                $prepared_statement->bindParam(":name",$this->name);
                                 $prepared_statement->bindParam(":password",$this->hashed_pwd);
                                 $prepared_statement->bindParam(":pending_email",$this->email);
                                 $prepared_statement->bindParam(":secondary_email",$this->secondary_email);
@@ -232,7 +236,7 @@ class signup  {
 
                                 $success = $prepared_statement->execute();
                                 if($success) {
-                                    $this->sendToNotificationService();
+                                    // $this->sendToNotificationService();
                                     return [
                                         "flag" => "1",
                                         "message" => "sucessfully inserted, please check your mail and activate your account ",

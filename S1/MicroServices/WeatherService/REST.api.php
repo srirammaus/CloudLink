@@ -31,7 +31,7 @@ class REST {
          */
         $user_auth = $this->isAuthorizedUser();
         $gateway_auth = $this->isGatewayAuthorized();
-        if($gateway_auth &&  $user_auth){ //(!$gateway_auth &&  !$user_auth){
+        if(!$gateway_auth &&  !$user_auth){ //(!$gateway_auth &&  !$user_auth){
             $message = "Unauthorized access";
             $this->response(401,"1700",$message);
             exit();

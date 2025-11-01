@@ -81,7 +81,7 @@ class signin {
             $this->username = $requestParams["username"];
             $this->password = $requestParams["password"];
             $this->timezone = $requestParams["timezone"];
-            $this->rememberMe = $requestParams["remember_me"] ?? false;
+            $this->remember_me = $requestParams["remember_me"] =="true"? true : false;
             $query = "SELECT * FROM users WHERE
                     username= '$this->username'";
 
@@ -110,7 +110,7 @@ class signin {
                     if($active_status == 1) {
 
                         //create the session and store in db
-                        $sessionManager->createSession($this->userid,$this->username,$this->timezone,$this->rememberMe);
+                        $sessionManager->createSession($this->userid,$this->username,$this->timezone,$this->remember_me);
 
                         //set sessions 
                         $sessionManager->setSession();

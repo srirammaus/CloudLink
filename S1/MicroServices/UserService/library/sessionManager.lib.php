@@ -9,7 +9,7 @@ include_once __DIR__."/sessionManager.lib.php";
 include_once __DIR__."/../utils/cache.php";
 
 use \utils\timeManager;
-
+use function \library\logg;
 class sessionManager {
     #learn cookie parameters before creating sessions
     public $sessionID;
@@ -69,7 +69,7 @@ class sessionManager {
         $timezone = $timezone ?? "Asia/Kolkata";
 
         $currentUTC = timeManager::utcNowSeconds();
-        $sessionExpiryTimeStamp = $currentUTC +  (3600 *24); // (3600 * 24) -1day
+        $sessionExpiryTimeStamp = $currentUTC +  (60 *1); // (3600 * 24) -1day
         $refreshExpiryTimeStamp = $currentUTC + (84600 * 30); // (84600 * 30) - 30days
         $this->s_expiry_utc = $sessionExpiryTimeStamp;
         $this->r_expiry_utc = $refreshExpiryTimeStamp;
@@ -217,14 +217,14 @@ class sessionManager {
      * Dont confuse with OAuth ,this is for remember me
      * persistent cookie changes once the session token updated
      */
-    public function refreshSession($result_sessionID,$result_username) {
+    public function refreshSession($result_sessionID,$result_username,$timezone = "Asia/Kolkata") {
 
         $this->s_status = 1;
         $this->r_status = 1;
         
         $this->genSessionToken();
         $this->genRefershToken();
-        // $this->setExpiry($timezone); // includes maxage and expiry    
+        $this->setExpiry($timezone); // includes maxage and expiry    
 
         
         try{
@@ -240,7 +240,7 @@ class sessionManager {
             ,r_expiry_utc=:r_expiry_utc
             ,max_age=:max_age
             ,s_status=:s_status
-            ,r_status=:r_status  WHERE sessionid=:sessionid";
+            ,r_status=:r_status WHERE sessionid=:sessionid";
 
 
             $prepared_stmt = $this->getConn()->prepare($query);
@@ -264,11 +264,17 @@ class sessionManager {
                 // return ["flag" => "1",
                 //     "message" => "sucessfully inserted session, please check your mail and activate your account ",
                 // ];
+                $this->username = $result_username;
                 $this->cacheSession($result_username,
                     $this->sessionID,
                     $this->sessionToken);
                 // echo "cahce session done";
-                return true;
+                // return true;
+                $this->setSession();
+                $resp = [
+                        "username"=>$result_username,
+                    ];
+                return $resp;
             }
         }catch(\PDOException $e) { //This is more subclassification as of now it is okay
             logg(file:"db_err",exception_: $e);
@@ -290,11 +296,9 @@ class sessionManager {
 
     public function setSession() {
         foreach ($this->cookieParameters() as $key => $value) {
-            setcookie(
-                $key,
-                $value,   
-
-                [//php does not contain maxage property 
+            $paramters = 
+              [//php does not contain maxage property 
+                    //if http only is true that is cant acesed by the document.cookie
                     //time() always belongs to UTC or GMT 
                     "expires" => time() + (3600 * 24),
                     // "max-age" => $this->maxAge,
@@ -304,7 +308,14 @@ class sessionManager {
                     "httponly" => true,
                     "samesite" => "Lax"
                     
-                ],
+              ];
+              if($key == "username") {
+                $paramters["httponly"] = false;
+              }
+            setcookie(
+                $key,
+                $value,   
+                $paramters,
             );
         }
     }
@@ -354,6 +365,7 @@ class sessionManager {
                 $result = $result->fetch()?:array();
 
                 if(count($result) > 0) {
+
                     /**
                         * -2 - already toExpire function done , only needs new login
                         * -1 - need toExpire function , needs new login
@@ -365,6 +377,7 @@ class sessionManager {
                     $result_sessionID = $result["sessionid"];
                     $result_username = $result["username"];
                     if($isExpired == 1) {
+
                         $this->cacheSession($result_username,
                         $this->sessionID,
                         $this->sessionToken);
@@ -375,19 +388,22 @@ class sessionManager {
                         return $resp;
                     }else if($isExpired == 0) {
                         // echo "is it works 0";
-
+                        
                         return $this->refreshSession($result_sessionID,$result_username);
                     }else if($isExpired == -1) {
                         // echo "is it works -1";
                         // return "need toExpire function , needs new login";
+
                         $this->toExpire($result_sessionID);
                         return false;
 
                     }else if($isExpired == -2) {
+
                         $this->toExpire($result_sessionID,0,NULL);
                         return false;
                     }
                     else if ($isExpired == -3) {
+
                         // echo "is it works -2";
                         // "already toExpire function done , only needs new login";
                         return false;

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 export default function HomeInterface() {
     var navigate = useNavigate();
     const paths = {
-        "control-centre":"/profile",
+        "control-centre":"/controlcentre",
         "learn-more":"https://srirammaus.github.io"
     }
     const handleOnClick = (e) => {

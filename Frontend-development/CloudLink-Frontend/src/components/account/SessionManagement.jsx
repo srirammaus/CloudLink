@@ -44,26 +44,27 @@ export default function SessionManagement({isOpen,openModal,closeModal}) {
       const getCurrentPage =  document.getElementById(currentPage);
       
       const lastPage = Number(currentPage.split("-")[1]) - 1
-      const getLastPage = document.getElementById("page-"+lastPage.toString())
-
+      const getLastPage = document.getElementById("page-"+lastPage.toString());
 
       getCurrentPage.classList.add("hidden");
-      getLastPage.classList.remove("hidden")
+      getLastPage.classList.remove("hidden");
 
     }
     function goNext() {
       const currentPage = pageStack.at(-1);
       const getCurrentPage = document.querySelector("."+currentPage);
-      console.log(currentPage)
-      console.log(pageStack)
+
+      // console.log(currentPage)
+      // console.log(pageStack)
+
       const NextPage = Number(currentPage.split("-")[1]) + 1
       const getNextPage = document.querySelector(".page-"+NextPage.toString());
 
       getCurrentPage.classList.add("hidden");
       pageStack.push("page-"+NextPage.toString())
       
-      console.log(NextPage)
-      console.log(getNextPage)
+      // console.log(NextPage)
+      // console.log(getNextPage)
       getNextPage.classList.remove("hidden");
 
      

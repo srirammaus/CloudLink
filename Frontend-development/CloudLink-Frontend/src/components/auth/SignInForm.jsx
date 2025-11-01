@@ -1,13 +1,100 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import { signinURLs,safeListedErrorCodes,isValidUsername, signIn } from "../../library/signinlib";
 export default function SignInForm() {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
+    const [username,setUsername] = useState()
+    const [password,setPassword] = useState()
+    const [signInMsg,setSignInMsg] = useState("Something went wrong!")
+
+    async function afterSignin(e)  {
+      e.preventDefault();
+      if(handlePwdonBlur() && handleUsernameOnBlur() ){
+
+        console.log(password)
+        console.log(username)
+        const Data = {
+          username:username,
+          password:password,
+          timezone:"Asia/Kolkata",
+          remember_me: isChecked,
+        }
+        console.log(isChecked)
+        const result = await signIn({...Data});
+        const signin_msg = document.getElementById("signin-msg")
+        const pwd_err = document.getElementById("pwd-err")
+        const usr_err = document.getElementById("username-err");
+        // console.log(result)
+        if(result?.flag == "1") {
+          navigate("/dashboard")
+
+        }else {
+          const flag = Number(result?.flag) ?? 0
+          switch (true) {
+            case flag >= 1000 && flag < 1100: //username err
+              usr_err.innerHTML = result?.message ?? "Invalid Username"
+              if(usr_err.classList.contains("hidden")) {
+                usr_err.classList.remove("hidden")
+              } 
+              break;
+            case flag >= 1100 && flag < 1200:    //password err   
+              pwd_err.innerHTML = result?.message ?? "Invalid Password"
+              if(pwd_err.classList.contains("hidden")) {
+                pwd_err.classList.remove("hidden")
+              }
+              break;  
+          default:   
+                setSignInMsg(result.message ?? "something went wrong");
+                signin_msg.classList.remove("hidden");
+                break;
+            }
+          }
+        }
+    }
+    function handlePwdonBlur () {
+      const pwd_err = document.getElementById("pwd-err");
+      if(typeof(password) != "string" || password == undefined) {
+        //show err 
+       pwd_err.classList.remove("hidden");
+        return false
+      }else {
+        //hide err
+        if(!pwd_err.classList.contains("hidden")) {
+         pwd_err.classList.add("hidden")
+        }
+        return true
+      }
+
+    }
+    function handleUsernameOnBlur () {
+      const usr_err = document.getElementById("username-err");
+      if(typeof(username) != "string" || username == undefined) {
+        //show err 
+        usr_err.classList.remove("hidden");
+        return false
+      }else {
+        //hide err
+        if(!usr_err.classList.contains("hidden")) {
+          usr_err.classList.add("hidden")
+        }
+        return true
+      }
+    }
+    function handleUsernameonChange (e) {
+      if(e.target.value.length < 15) {
+        setUsername(e.target.value)
+      }
+    }
+    function handlePwdonChange (e) {
+      setPassword(e.target.value)
+    }
     return (<div className="flex flex-col flex-1">
       <div className="w-full max-w-md pt-10 mx-auto">
         <Link to="/" className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
@@ -59,18 +146,21 @@ export default function SignInForm() {
                   <Label>
                     Username <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="username"/>
+                  <Input onBlur={()=>handleUsernameOnBlur()}onChange={(e)=>handleUsernameonChange(e)} value={username} placeholder="username"/>
+                    <span id="username-err" className="text-error-400 text-xs hidden">Invalid Username</span>
+
                 </div>
                 <div>
                   <Label>
                     Password <span className="text-error-500">*</span>{" "}
                   </Label>
                   <div className="relative">
-                    <Input type={showPassword ? "text" : "password"} placeholder="Enter your password"/>
+                    <Input onBlur={()=>handlePwdonBlur()}onChange={(e)=>handlePwdonChange(e)} value={password} type={showPassword ? "text" : "password"} placeholder="Enter your password"/>
                     <span onClick={() => setShowPassword(!showPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
                       {showPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
                     </span>
                   </div>
+                    <span id="pwd-err" className="text-error-400 text-xs hidden">Invalid Password</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -84,9 +174,11 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
+                  <Button className="w-full" size="sm" onClick={(e)=>{afterSignin(e)}}>
                     Sign in
                   </Button>
+                    <span id="signin-msg" className="text-error-400 text-xs hidden">{signInMsg}</span>
+
                 </div>
               </div>
             </form>

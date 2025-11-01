@@ -1,17 +1,275 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
+import { useModal } from "../../hooks/useModal";
+import { Modal } from "../ui/modal";
+import { Link, redirect, useNavigate } from "react-router";
+import { ChevronLeftIcon, EyeCloseIcon, EyeIcon, RefershIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import TextAreaInput from "../form/form-elements/TextAreaInput";
 import TextArea from "../form/input/TextArea";
+import { LoaderCircle } from "lucide-react";
+import { signuplib,signupURLs,isValidUsername,safeListedErrorCodes} from "../../library/signuplib";
+import ComponentCard from "../common/ComponentCard";
+import Alert from "../ui/alert/Alert";
+import Button from "../ui/button/Button";
+// import { preventDefault } from "@fullcalendar/core/internal";
+import validator from 'validator';
+
+/**
+ * 
+ * @returns 
+ * signup duties :
+ * Invalid input field username or phone or email or anything
+ * 
+ * This  should capcable for handling unexpected content-type
+ * handle exact err
+ * 
+ */
 export default function SignUpForm() {
+    const navigate = useNavigate()
+    const { isOpen, openModal, closeModal } = useModal();
     const limitCount = 50;
     const [message, setMessage] = useState("");
+    const [phone,setPhone] = useState();
+    const [name,setName] = useState();
+    const [username,setUsername] = useState();
+    const [captcha,setCaptcha] = useState(signupURLs().captcha)
+    const [captchaVal,setCaptchaval] = useState();
     const [showPassword, setShowPassword] = useState(false);
     const [showCPassword,setShowCPassword] = useState(false);
+    const [password,setPassword] = useState();
+    const [cpassword,setCpassword] = useState();
+    const [email,setEmail] = useState();
+    const [secondary_email,setSecondary_email] = useState();
+    const [SignupStatus,setSignupStatus] = useState(false)
     const [isChecked, setIsChecked] = useState(false);
+    const [sent,setSent] = useState(false);
+    const [AllTest,SetAllTest] = useState(false);
+    const [signupMsg,setSignupMsg] = useState("Something went wrong");
+
+    async function signup(e) {
+      e.preventDefault()
+      const Data = {
+          username:username,
+          name:name,
+          password:password,
+          phone:phone,
+          email:email,
+          secondary_email:secondary_email,
+          bio:message,
+          captcha:captchaVal,
+      }
+      const signup_msg = document.getElementById("signup-msg");
+
+      if(handleCPwdOnBlur() && handleEmailonBlur() && handleCaptchaValonBlur() &&handleSecondEmailonBlur() && handleNumberonBlur() && handleUsernameOnBlur() ){
+        if(!signup_msg.classList.contains("hidden")) {
+          signup_msg.classList.add("hidden")
+        } 
+        await loadModal(Data,signup_msg)
+
+
+      }
+
+    }
+    async function loadModal (Data,signup_msg) {
+        setSent(true);
+
+        const result =  await signuplib({...Data})
+        if(result?.flag == "1") { //redirect after modal
+          setSignupStatus(true)
+          setSignupMsg(result.message)
+          openModal()
+          setSent(false);
+        }else{
+          setSent(false)
+          setSignupStatus(false)
+          const flag = Number(result?.flag);
+          const usr_err = document.getElementById("username-err");
+          const pwd_err = document.getElementById("cpwd-err"); 
+          const em_err =  document.getElementById("email-err");
+          const num_err = document.getElementById("number-err");
+          const bio_er = document.getElementById("bio-err");
+              const cap_err = document.getElementById("captcha-err");
+
+          switch (true) {
+            case flag >= 1000 && flag < 1100: //username err
+              usr_err.innerHTML = result?.message ?? "Invalid Username"
+                if(usr_err.classList.contains("hidden")) {
+                    usr_err.classList.remove("hidden")
+                  } 
+                break;
+            case flag >= 1100 && flag < 1200:    //password err   
+              pwd_err.innerHTML = result?.message ?? "Invalid Password"
+              if(pwd_err.classList.contains("hidden")) {
+                  pwd_err.classList.remove("hidden")
+                }
+              break;          
+            case flag >= 1200 && flag < 1300: //email err
+               em_err.innerHTML = result?.message ?? "Invalid Email"
+                 if(em_err.classList.contains("hidden")) {
+                    em_err.classList.remove("hidden")
+                  }
+              break;            
+            case flag >= 1300 && flag < 1400: // phone number err
+              num_err.innerHTML = result?.message ?? "Invalid phone number"
+                if(num_err.classList.contains("hidden")) {
+                    num_err.classList.remove("hidden")
+                  }
+              break;            
+            case flag >= 1400 && flag < 1500:  //bio
+              bio_er.innerHTML = result?.message ?? "Invalid Bio"
+                if(bio_er.classList.contains("hidden")) {
+                    bio_er.classList.remove("hidden")
+                  }
+              break;
+            case flag >= 1900 && flag < 2000: //captcha
+              cap_err.innerHTML = result?.message ?? "Invalid captcha"
+                if(cap_err.classList.contains("hidden")) {
+                    cap_err.classList.remove("hidden")
+                  }
+              break;
+            default: //something went wrong pop it
+              
+              setSignupMsg(result.message ?? "something went wrong");
+              signup_msg.classList.remove("hidden");
+              break;
+          }
+        }
+    }
+    function handleUsernameonChange (e) {
+       if(e.target.value.length < 15) {
+        setUsername(e.target.value)
+      }
+    
+    }
+    function handleNameonChange (e) {
+      if(e.target.value.length < 15) {
+        setName(e.target.value)
+      }
+      if(e.target.value.includes("-")){
+        setName(" ");
+      }
+
+    }
+    function handleNumberonChange (e) {
+      
+      if(e.target.value.length < 15) {
+        setPhone(e.target.value)
+      }
+
+    }
+
+    function handleNumberonBlur () {
+      const number_id =document.getElementById("number-err");
+      if(!validator.isNumeric(phone+ "")) {
+        //show err 
+        number_id.classList.remove("hidden");
+        return false
+      }else {
+        //hide err
+        if(!number_id.classList.contains("hidden")) {
+          number_id.classList.add("hidden")
+        }
+        return true
+      }
+    }
+    function handleEmailonBlur () {
+      const email_id =document.getElementById("email-id");
+      if(!validator.isEmail(email+ "")) {
+        //show err 
+        email_id.classList.remove("hidden");
+        return false
+      }else {
+        //hide err
+        if(!email_id.classList.contains("hidden")) {
+          email_id.classList.add("hidden")
+        }
+        return true
+      }
+    }
+        
+    function handleSecondEmailonBlur () {
+      const second_email_err =document.getElementById("second-email-err");
+      if(!validator.isEmail(secondary_email+ "")) {
+        //show err 
+        second_email_err.classList.remove("hidden");
+        return false
+      }else {
+        //hide err
+        if(!second_email_err.classList.contains("hidden")) {
+          second_email_err.classList.add("hidden")
+        }
+        return true
+      }
+    }
+  
+  
+    function handleUsernameOnBlur() {
+        const username_err =  document.getElementById("username-err");
+        if(!isValidUsername(username)) {
+                  // show
+            console.log(isValidUsername(username))
+            username_err.classList.remove("hidden")
+            return false
+        }else {        
+              // hide
+          if(!username_err.classList.contains("hidden")) {
+            username_err.classList.add("hidden")
+
+          }
+          return true
+        }
+    }
+    function handleCPwdOnBlur () {
+        const cpwd_err =  document.getElementById("cpwd-err");
+      if(password != cpassword) {
+                // show
+          cpwd_err.classList.remove("hidden")
+          return false
+      }else {        
+             // hide
+        if(!cpwd_err.classList.contains("hidden")) {
+          cpwd_err.classList.add("hidden")
+        }
+        return true
+
+        
+      }
+    }
+    function handleCaptchaValonBlur () {
+        const cap_err = document.getElementById("captcha-err");
+        if(typeof(cap_err).innerHTML != "string") {
+                // show
+          console.log("does this happening")
+          cap_err.classList.remove("hidden")
+          return false
+      }else {        
+             // hide
+          console.log("does this happening2")
+        if(!cap_err.classList.contains("hidden")) {
+          cap_err.classList.add("hidden")
+        }
+        return true
+
+        
+      }
+       
+    }
+    /**
+     * name - should not be emtpy , no hyphens,maxlen50
+     * Invalid email, password and cpassword mismatch
+     */
+    function handleInputErrors() {
+
+    }
+    function resetCaptcha () {
+      setCaptcha("");
+      setTimeout(()=>{
+        setCaptcha(signupURLs().captcha)
+      },1)
+    }
+
     return (<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="w-full max-w-md mx-auto mb-5 sm:pt-10">
         <Link to="/" className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
@@ -19,7 +277,7 @@ export default function SignUpForm() {
           Back to dashboard
         </Link>
       </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+      <div className="page-1 flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
@@ -61,33 +319,46 @@ export default function SignUpForm() {
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {/* <!-- First Name --> */}
+                     <div className="sm:col-span-1">
+                    <Label>
+                      Name<span className="text-error-500">*</span>
+                    </Label>
+                    <Input type="text" id="name" name="name" value={name} placeholder="Enter your first name" onChange={(e) =>handleNameonChange(e)}/>
+                    <span className="text-error-400 text-xs hidden">Name should not includes this chars</span>
+                  </div>
                   <div className="sm:col-span-1">
                     <Label>
                       Email<span className="text-error-500">*</span>
                     </Label>
-                    <Input type="text" id="Email" name="Email" placeholder="Enter your first name"/>
+                    <Input onBlur={(e)=>{handleEmailonBlur()}}type="text" id="Email" name="Email" placeholder="Enter your Email" value={email} onChange={(e)=>setEmail(e.target.value)}/>
+                    <span id="email-id" className="text-error-400 text-xs hidden">Invalid Email</span>
+                  
                   </div>
                   {/* <!-- Last Name --> */}
                   <div className="sm:col-span-1">
                     <Label>
                       Phone<span className="text-error-500">*</span>
                     </Label>
-                    <Input type="text" id="phone" name="phone" placeholder="Enter your last name"/>
+                    <Input onBlur={(e) => handleNumberonBlur()} type="number" id="phone" name="phone" value={phone} placeholder="Enter your Phone number" onChange={(e) =>handleNumberonChange(e)}/>
+                    <span id="number-err" className="text-error-400 text-xs hidden">Invalid Number</span>
                   </div>
                   <div className="sm:col-span-1">
                     <Label>
                       secondary Email<span className="text-error-500">*</span>
                     </Label>
-                    <Input type="text" id="secondary-email" name="secondary-email" placeholder="Enter your last name"/>
+                    <Input onBlur={(e)=>handleSecondEmailonBlur()}type="text" id="secondary-email" name="secondary-email" placeholder="Enter your seconday email" value={secondary_email} onChange={(e)=>setSecondary_email(e.target.value)}/>
+                    <span id="second-email-err" className="text-error-400 text-xs hidden">Invalid Email</span>
                     
                   </div>
+                  
                 </div>
                 {/* <!-- Email --> */}
                 <div >
                   <Label>
                     Username<span className="text-error-500">*</span>
                   </Label>
-                  <Input type="email" id="email" name="email" placeholder="Enter your email"/>
+                  <Input  onBlur={(e)=>handleUsernameOnBlur()}type="text" id="username" name="username" value={username} placeholder="Enter your username" onChange={(e) => handleUsernameonChange(e)}/>
+                    <span id="username-err"className="text-error-400 text-xs hidden">Invalid Username</span>
                 </div>
                 {/* <!-- Password --> */}
                 <div>
@@ -95,35 +366,50 @@ export default function SignUpForm() {
                     Password<span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
-                    <Input placeholder="Enter your password" type={showPassword ? "text" : "password"}/>
+                    <Input onBlur={(e)=>handleCPwdOnBlur()} placeholder="Enter your password" value={password} type={showPassword ? "text" : "password"} onChange={(e)=>setPassword(e.target.value)}/>
                     <span onClick={() => setShowPassword(!showPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
                       {showPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
                     </span>
                   </div>
+                  <span className="text-error-400 text-xs hidden">Password Mismatch</span>
                 </div>
                 {/* confirm password */}
                 <div>
                   <Label>
-                    Password<span className="text-error-500">*</span>
+                    Confirm Password<span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
-                    <Input placeholder="Enter your password" type={showCPassword ? "text" : "password"}/>
+                    <Input placeholder="Enter your password" value={cpassword} type={showCPassword ? "text" : "password"} onChange={(e)=>setCpassword(e.target.value)} onBlur={(e) =>handleCPwdOnBlur()}/>
                     <span onClick={() => setShowCPassword(!showCPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
-                      {showPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
+                      {showCPassword ? (<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>) : (<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5"/>)}
                     </span>
+                    
                   </div>
+                    <span id="cpwd-err" className="text-error-400 text-xs hidden">Password Mismatch</span>
                 </div>
                  <div>
                   <Label>
                     Bio<span className="text-error-500">*</span>
                   </Label>
                     <TextArea value={message} onChange={(value) =>{ if(value.length < limitCount) return setMessage(value)}} rows={6}/>
+                    <span id="bio-err" className="text-error-400 text-xs hidden">Invalid Bio</span>
                 </div>
                   <div >
                   <Label>
                     Captcha<span className="text-error-500">*</span>
                   </Label>
-                  <Input type="text" id="captcha" name="captcha" placeholder="Enter Captcha" />
+                    <div className="flex">
+                      <span className="block mr-3 mb-3 overflow-hidden  h-10 w-25">
+                        <img src={captcha} alt="User"/>
+                      </span>
+                      <span className="mr-3 mt-3 cursor-pointer" onClick={()=>resetCaptcha()}>
+                        <RefershIcon/>
+                      </span>
+                    </div>
+                   
+                    <Input onBlur={handleCaptchaValonBlur} type="text" id="captcha" name="captcha" placeholder="Enter Captcha" value={captchaVal} onChange={(e)=>setCaptchaval(e.target.value)}/>
+                    <span id="captcha-err" className="text-error-400 text-xs hidden"></span>
+
                 </div>
                 {/* <!-- Checkbox --> */}
                 <div className="flex items-center gap-3">
@@ -141,9 +427,13 @@ export default function SignUpForm() {
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                    Sign Up
+                  <button onClick={(e)=>{signup(e)}} className={`flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 `} >
+                    
+                    <LoaderCircle className={ ` ${!sent?"hidden":"loader"}`}/>
+                    {!sent &&  "Sign Up"}
+
                   </button>
+                    <span id="signup-msg" className="text-error-400 text-xs hidden">{signupMsg}</span>
                 </div>
               </div>
             </form>
@@ -159,5 +449,49 @@ export default function SignUpForm() {
           </div>
         </div>
       </div>
+        <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+        <div id="page-2" className="page-2 no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                  Signup Status
+            </h4>
+          </div>
+        { SignupStatus == true &&  (<ComponentCard title="Signup Successful
+">
+        <Alert
+          variant="success"
+          title="Account Created"
+          message="Your account has been created successfully."
+          showLink={false}
+        />
+
+           {/* <Alert
+            variant="warning"
+            title="Warning Message"
+            message="Be cautious when performing this action."
+            showLink={false}
+          /> */}
+          </ComponentCard> )} 
+          { SignupStatus ==false &&  (<ComponentCard title="Signup Failed">
+                <Alert
+            variant="error"
+            title="Registration Failed"
+            message="We couldn’t create your account. Please try again."
+            showLink={false}
+          />
+
+          </ComponentCard> )} 
+         
+       
+          <form className="flex flex-col items-center">
+
+            <div className="flex flex-col items-center gap-3 px-2 mt-10 lg:flex-row lg:justify-end w-full">
+              <Button size="sm" variant="outline" type="button" onClick={(e) =>{navigate("/signin")} }>
+                SignIn
+              </Button>
+            </div>
+          </form>
+        </div>
+        </Modal>
     </div>);
 }

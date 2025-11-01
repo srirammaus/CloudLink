@@ -182,9 +182,19 @@ class REST {
      * set request content type
      */
     public function setResponseHeader() {
+        $allowed_origins = [
+            "http://localhost:8000",
+            "http://localhost:5173",
+        ];
+        $origin = $_SERVER["HTTP_ORIGIN"] ?? "";
         header("HTTP/1.1 ".$this->_code." ".$this->_message);
         header("Content-Type:".$this->content_type);
-        header("Access-Control-Allow-origin:http://localhost/");
+
+        if(in_array($origin,$allowed_origins)){
+            header("Access-Control-Allow-Origin:".$origin);
+
+        }
+        header("Access-Control-Allow-Credentials: true");
     }
     public function setXResponseHeader ($X_Cache_Control="None",$X_TTL=0) {
         /**

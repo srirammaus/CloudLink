@@ -19,7 +19,6 @@ use Throwable;
 include_once "library/log.lib.php";
 use function \library\logg;
 session_start();
-// $_SESSION["test"] = "test";
 set_exception_handler (function(Throwable $e) { 
 
     logg(file:"server_err", exception_:$e);
@@ -51,6 +50,8 @@ function main  () {
     try {
         if($REST->getRequestMethod() == "POST") {
             $signup = new \library\signup;
+            logg(file:"backend_log", message: json_encode($REST->_request));
+
             $resp = $signup->createUser ($REST->_request);
             if($resp) {
                 /**
@@ -71,7 +72,7 @@ function main  () {
     }catch (\Throwable $e) {
         if($e instanceof \clientException) {
             logg(file:"client_err",exception_: $e);
-            $REST->response($e->getCode(),$e->getErrorCode(),$e->getCustomMessage());
+            $REST->response($e->getCode(),$e->getErrorCode(),$e->getCustomMessage()); //
             // header("Location: srirammaus.github.io");
 
         }

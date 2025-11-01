@@ -51,7 +51,8 @@ class requestAggregation {
     protected $methods;
     protected $paths;
     protected $baseURLs;
-
+    protected $requestID;
+    
     protected $edpoint6;
     public $sub_req_paths = [];
     public function __construct () {

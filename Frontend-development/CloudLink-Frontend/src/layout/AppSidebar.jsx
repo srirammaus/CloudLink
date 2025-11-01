@@ -10,7 +10,7 @@ const navItems = [
         icon: <HomeIcon />,
         name: "Dashboard",
         // path:"/",
-        subItems: [{ name: "Home", path: "/", pro: false }],
+        subItems: [{ name: "Home", path: "/dashboard", pro: false }],
     },
     {
         icon: <SettingsIcon/>,

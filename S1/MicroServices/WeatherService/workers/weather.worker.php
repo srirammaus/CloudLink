@@ -29,8 +29,6 @@ class Weather_worker {
      * 3. then fetch those all
      * 5. find the duplicates
      * 4. save the mutual values with reference
-     * 
-     * 
      * @return void
      */
     public function work ($coords) {
@@ -66,12 +64,7 @@ class Weather_worker {
                      * for cross check check $count below and print_r($value) you doubdt will be clarified , use this value to atitude=12.9716&longitude=77.5946 clear doubt.
                      * 
                      */
-                    // if(isset($value["REF"])){
-                    //     echo "\n".$count;
-                    //     echo "\n";
-                    //     var_dump($merged_coords[$count]);
-                    //     print_r($value);
-                    // }
+             
                     $lat_key = $merged_coords[$count]["latitude"];
                     $lng_key = $merged_coords[$count]["longitude"];
                     $bucket_prefix = $weather->getBucketPrefix($lat_key,$lng_key);
@@ -91,11 +84,7 @@ class Weather_worker {
             }else {
                 logg(file:"backend_log",message:"something went wrong while downloading this coordinates ".$coords[1]." ".timeManager::utcNow());
             }
-
-
         }
-
-
 
     }
   

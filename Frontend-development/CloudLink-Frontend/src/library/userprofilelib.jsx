@@ -1,0 +1,140 @@
+import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Atom } from "react-loading-indicators";
+/**
+ * This component is not compulsory to used by all, something like /editprofile route page any how that gonna call the /api/profile so there may be a check , if not authenticated then redirected
+ * @param {*} param0 
+ * @returns 
+ */
+export function Userprofile ({children}) {
+    const navigate = useNavigate();
+    const [username,setUsername] = useState();
+    const [isAuth,setAuth] = useState();
+    const [isLoading,setLoading] = useState(true);
+
+    const filtered_resp = {
+        flag:'0',
+        message:"something went wrong",
+    }
+    useEffect(()=>{
+      const cookies = document.cookie.toString();
+      const cookies_ = cookies.split(";");
+      let found = null;
+      cookies_.forEach(cookie => {
+        if(cookie.includes("username")) {
+          console.log(cookie.split("="))
+          found= cookie.split("=")[1];
+        }
+      });
+      if(!found) {
+        navigate("/")
+      }
+      setUsername(found)
+
+   
+    },[])
+    console.log(username)
+    useEffect(()=>{
+      (async () => {
+        try {
+          if(!username) {
+            return
+          }
+          
+          const data = {
+            username:username,
+          }
+          const res = await post(data);
+      
+          if(res?.flag == "1") {
+            setAuth(true)
+          }else {
+            //We having ErrorCodes so we have to handle authetication errors and http erros here (that's why i not used 401,403,500 in below)
+            navigate("/")
+          }
+        }catch (err){
+          console.log(err.message)
+          // navigate("/")
+        }finally {
+          if(isAuth == true) {
+            setLoading(false)
+          }
+
+        }
+      })()
+    },[username,isAuth])
+
+    if(isLoading) return <div className="flex w-full h-[80vh] items-center justify-center"><Atom color="#729a5a" size="medium" text="" textColor="" /></div>
+    if(isAuth){
+      // return React.cloneElement(children,{name:"sriram"})
+      return <>{children}</>
+    }
+
+
+
+}
+async function post(data) {
+    try {
+      const query = new URLSearchParams(data);
+      const resp = await fetch(AuthURLs().authAPI+`?${query}`,{
+          method:"GET",
+          credentials:"include",
+       
+      });
+      //other than 200
+      // if(!resp.ok) {
+        // //unAuthorized access
+        //   if(resp.status == 401) {
+
+        //   }
+        //   if(resp.status == 403) { //forbidden
+
+        //   }
+        //   if(resp.status == 500) { // redirect to Internal server error page
+
+        //   }
+      // }
+      if(!resp) {
+        throw new Error("something went wrong");
+      }
+
+      let contentType = resp.headers.get("content-type") || "" ;
+      if(!contentType.includes("application/json")) {
+        throw new Error("unexpected Content Type")
+      }
+      let js ;
+      try {
+        js = await resp.json();
+
+      }catch(err) {
+        throw new Error("Parsing Error")
+      }
+        return js;
+    }
+    //any technicall errors can be caught here, validation error shodl be checked in that above
+    catch(err) {
+        
+        return {ErrorCode:"2000",message:"something went wrong"}
+    }
+  
+}
+
+function response_filter (resp,filtered_resp) {
+    if(resp?.flag) {
+        filtered_resp.flag = resp.flag
+    }
+    if(resp?.message && typeof(resp?.message) == "object") {
+        response_filter(resp.message,filtered_resp)
+    }
+    if(resp?.message &&typeof(resp?.message) == "string" ) {
+        filtered_resp.message = resp.message
+    }
+    if(resp?.ErrorCode){
+        filtered_resp.flag = resp.ErrorCode
+    }
+}
+function AuthURLs() {
+    return {
+        authAPI:"http://localhost:8000/api/user/getUserInfo.api.php"
+    }
+}

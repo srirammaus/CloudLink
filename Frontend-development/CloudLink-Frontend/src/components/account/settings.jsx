@@ -7,7 +7,7 @@ import TwoFactorAuth from "./TwoFactorAuth";
 import ChangePassword from "./ChangePassword";
 import { useState } from "react";
 import SessionManagement from "./SessionManagement";
-
+import DeleteAccount from "./DeleteAccount";
 export default function Settings() {
     const [selectedIndex,setSelectedIndex] = useState(false);
     const { isOpen, openModal, closeModal } = useModal();
@@ -22,11 +22,11 @@ export default function Settings() {
         "Two Factor Authentication",
         "Password Settings",
         "Session Management",
-        "Activity History",
+        // "Activity History",
         "Delete Account",
-        "Deactivate Account",
+        // "Deactivate Account",
         "Export Data",
-        "Language",
+        // "Language",
     ]
     function renderModal() {{
         switch (selectedIndex) {
@@ -37,7 +37,9 @@ export default function Settings() {
             case 2:
                 return  <SessionManagement isOpen={isOpen} openModal={openModal} closeModal={closeModal}/>;
             case 3:
-                return  <></> ;
+                return <DeleteAccount isOpen={isOpen} openModal={openModal} closeModal={closeModal}/>;
+            case 5:
+                return <></> ;
             default:
                 return <></> ;
             }

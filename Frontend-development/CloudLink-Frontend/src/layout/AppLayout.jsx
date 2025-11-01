@@ -19,7 +19,8 @@ const LayoutContent = () => {
     </div>);
 };
 const AppLayout = () => {
-    return (<SidebarProvider>
+    return (
+    <SidebarProvider>
       <LayoutContent />
     </SidebarProvider>);
 };

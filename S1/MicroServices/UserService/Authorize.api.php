@@ -62,7 +62,7 @@ function main() {
                 $username =$_COOKIE["username"];
                 $service = $requestParams["service"];
                 $Auth = new \library\Authorization;
-                $Auth->genJWT($uername,$service);
+                $Auth->genJWT($username,$service);
                 $Auth->setAuthHeader();
 
                 $resp = [
