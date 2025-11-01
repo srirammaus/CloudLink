@@ -124,7 +124,7 @@ export async function post (signinData) {
         if(!resp) {
             return {}
         }
-        console.log(await resp.text)
+        // console.log(await resp.text)
         return await resp.json();
     }
     catch(err) {

@@ -6,6 +6,7 @@ import { Atom } from "react-loading-indicators";
  * @param {*} param0 
  * @returns 
  */
+
 export function Userprofile ({children}) {
     const navigate = useNavigate();
     const [username,setUsername] = useState();
@@ -50,11 +51,19 @@ export function Userprofile ({children}) {
             setAuth(true)
           }else {
             //We having ErrorCodes so we have to handle authetication errors and http erros here (that's why i not used 401,403,500 in below)
-            navigate("/")
+            //other than 2000,2003 take them to signin page and (note : use signout or clearsessionn function later)
+            
+            if(res?.ErrorCode == "2000" || res?.ErrorCode == "2003") {
+              navigate("/dashboard"); //as of now redirecting him to dashboard later take him inter server error page
+            }else {
+              //add the clearSession later
+              navigate("/")
+            }
           }
         }catch (err){
+          //These errs mostly front end errors
           console.log(err.message)
-          // navigate("/")
+          navigate("/dashboard"); //now itself redirecting dashboard later take him  somehting went wrong page 
         }finally {
           if(isAuth == true) {
             setLoading(false)
@@ -85,13 +94,10 @@ async function post(data) {
       // if(!resp.ok) {
         // //unAuthorized access
         //   if(resp.status == 401) {
-
         //   }
         //   if(resp.status == 403) { //forbidden
-
         //   }
         //   if(resp.status == 500) { // redirect to Internal server error page
-
         //   }
       // }
       if(!resp) {
