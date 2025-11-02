@@ -50,7 +50,7 @@ function main() {
                 //check if the user session is valid or expired
                 $sessionManager = new \library\sessionManager;
                 if($sessionManager->isAuthenticated()){
-                    var_dump($requestParams);
+                    // var_dump($requestParams);
                     $update_profile = new \library\updateProfile($requestParams);
                     if($update_profile->updateProfile()){
                         $resp = [

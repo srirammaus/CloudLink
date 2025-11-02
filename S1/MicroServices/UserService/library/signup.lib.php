@@ -203,13 +203,13 @@ class signup  {
 
                             try {
                                 $query = "INSERT INTO users (userid,username,name,password,pending_email,
-                                secondary_email,phone,bio,avatar,profile_created,status,
+                                secondary_email,pending_phone,bio,avatar,profile_created,status,
                                 email_token,phone_otp,verified_E,verified_M,
                                 email_token_expiry,phone_otp_expiry
                                 ) 
 
                                 VALUES (:userid,:username,:name,:password,:pending_email,:secondary_email,
-                                :phone,:bio,:avatar,:profile_created,:status,
+                                :pending_phone,:bio,:avatar,:profile_created,:status,
                                 :email_token,:phone_otp,:verified_E,:verified_M,
                                 :email_token_expiry,:phone_otp_expiry)";
 
@@ -220,7 +220,7 @@ class signup  {
                                 $prepared_statement->bindParam(":password",$this->hashed_pwd);
                                 $prepared_statement->bindParam(":pending_email",$this->email);
                                 $prepared_statement->bindParam(":secondary_email",$this->secondary_email);
-                                $prepared_statement->bindParam(":phone",$this->phone);
+                                $prepared_statement->bindParam(":pending_phone",$this->phone);
                                 $prepared_statement->bindParam(":bio",$this->bio);
                                 $prepared_statement->bindParam(":avatar",$this->avatar);
                                 $prepared_statement->bindParam(":profile_created", $currentTime);

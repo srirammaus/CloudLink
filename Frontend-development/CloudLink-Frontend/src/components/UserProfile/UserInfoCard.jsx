@@ -3,11 +3,96 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
-export default function UserInfoCard() {
+import { useState } from "react";
+export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
+    const [nameVal,setName] = useState(name)
+    const [usernameVal,setUsername] = useState(username)
+    const [emailVal,setEmail] = useState(email)
+    const [phoneVal,setPhone] = useState(phone)
+    const [bioVal,setBio] = useState(bio)
+    const [changed,setChange] = useState({})
+    function handlOnChange(e,index) {
+      setEditable_personal_info((prev)=>{
+          return prev.map((item,idx) => {
+          if(index == idx) {
+            console.log(e.target.value,static_personal_info[index].value)
+            let id = document.getElementById(item.errID)
+            if(e.target.value != static_personal_info[index].value) {
+              if(!id.classList.contains("hidden")) {
+                id.classList.add("hidden")
+              }
+              setChange(old=>({
+                ...old,
+                [item.label]:e.target.value
+              }))
+            }else {
+              id.classList.remove("hidden")
+              setChange(old=>{
+                delete old[item.label];
+                return old
+              })
+            }
+      
+         
+            return {...item,value:e.target.value}
+          }
+          return item
+          })
+       })
+    }
+    function handleOnBlur(index) {
+      console.log(editable_personal_info[index].errID)
+      let id = document.getElementById(editable_personal_info[index].errID);
+        if(!id.classList.contains("hidden")) {
+          id.classList.add("hidden")
+        }
+    }
+    const [static_personal_info,setStatic_personal_info] = useState(
+          [
+          {label:"Name",value:name,},
+          {label:"Username",value:username,},
+          {label:"Email",value:email,},
+          {label:"Phone",value:phone,},
+          {label:"Bio",value:bio,},
+        ]
+    )
+      const [editable_personal_info, setEditable_personal_info] = useState([
+        {
+          label: "Name",
+          value: name,
+          errID: "name-id",
+          errVal: "Name cannot be same as previous value",
+        },
+        {
+          label: "Username",
+          value: username,
+          errID: "usr-id",
+          errVal: "Please choose a different username",
+        },
+        {
+          label: "Email",
+          value: email,
+          errID: "email-id",
+          errVal: "Please provide a valid, updated email address",
+        },
+        {
+          label: "Phone",
+          value: phone,
+          errID: "phone-id",
+          errVal: "Please update to a new phone number",
+        },
+        {
+          label: "Bio",
+          value: bio,
+          errID: "bio-id",
+          errVal: "Bio must contain updated information",
+        },
+]);
+
+   
     const { isOpen, openModal, closeModal } = useModal();
     const handleSave = () => {
-        // Handle save logic here
-        console.log("Saving changes...");
+        const signature = onClick.updateProfile(changed);
         closeModal();
     };
     return (<div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -23,7 +108,7 @@ export default function UserInfoCard() {
                 Username
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                sriram mariappan
+                {usernameVal ?? ""}
               </p>
             </div>
 
@@ -32,7 +117,7 @@ export default function UserInfoCard() {
                 Email
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                srirammaus@gmail.com
+                {emailVal ?? ""}
               </p>
             </div>
 
@@ -41,7 +126,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +919080010758
+                {phoneVal ?? ""}
               </p>
             </div>
 
@@ -59,7 +144,9 @@ export default function UserInfoCard() {
                 Bio
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                This Cloudlink Application is designed and developed by Sriram mariappan
+                {/* This Cloudlink Application is designed and developed by Sriram mariappan
+                 */}
+                {bioVal ?? ""}
               </p>
             </div>
           </div>
@@ -118,30 +205,16 @@ export default function UserInfoCard() {
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
-                    <Input type="text" value="Musharof"/>
-                  </div>
+                  {editable_personal_info.map((elem,index)=>{
+                   return (<div key={index} className="col-span-2 lg:col-span-1">
+                      <Label>{elem.label}</Label>
+                      <Input type="text" value={elem.value} onChange={(e)=>handlOnChange(e,index)} onBlur={()=>handleOnBlur(index)}/>
+                      <span id={elem.errID} className="text-error-400 text-xs hidden">{elem.errVal}</span>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury"/>
-                  </div>
+                  </div>)
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com"/>
-                  </div>
-
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46"/>
-                  </div>
-
-                  <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" value="Team Manager"/>
-                  </div>
+                  })}
+           
                 </div>
               </div>
             </div>
@@ -149,7 +222,7 @@ export default function UserInfoCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" onClick={(e)=>{handleSave(e); console.log(changed)}}>
                 Save Changes
               </Button>
             </div>

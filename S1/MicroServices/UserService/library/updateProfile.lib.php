@@ -111,7 +111,7 @@ class updateProfile {
         //isvalid phone
         if($this->new_phone_number != NULL) {
             if($genLib->isValidPhone($this->new_phone_number)) {
-                $this->update_data["phone"] = $this->new_phone_number;
+                $this->update_data["pending_phone"] = $this->new_phone_number;
                 $this->otp = $genLib->generateOTP();
                 $this->update_data["phone_otp"] = $this->otp;
                 $this->send_otp = true;
@@ -158,7 +158,7 @@ class updateProfile {
             }   
         }
         $query = "UPDATE users u JOIN sessions s ON s.session_token=:session_token AND s.username=:username  SET".$queryString." WHERE u.username=:username";
-        echo $query;
+        // echo $query;
         $conn = $this->getConn();
         $stmt = $conn->prepare($query);
 
@@ -168,12 +168,16 @@ class updateProfile {
         $res = $stmt->execute();
         if($res) {
             $updatedRow = $stmt->rowCount();
-            // if($updatedRow > 0 ) {
-            $this->sendToNotificationService();    
+            if($updatedRow > 0 ) {
+
+
+            // $this->sendToNotificationService();     //uncomment this later
             return TRUE;
-            // }else {
-                // throw new \clientException(ErrorCode:"1805");
-            // }
+
+
+            }else {
+                throw new \clientException(ErrorCode:"1805");
+            }
         }else {
             throw new \databaseException(ErrorCode:"1803");
         }

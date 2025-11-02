@@ -52,7 +52,7 @@ class responseCache {
             //setting the cache only for those who having sessions
             if($session_caching_key != NULL) {
                 $this->path_to_key = CACHE_PREFIX.$path.":".$session_caching_key;
-                if(method_exists($resp,'getContent') ){ //&& method_exists($resp,"getHeadrLine")
+                if(method_exists($resp,'getContent') && method_exists($resp,"getHeadrLine")){ //remove the && method_exists($resp,"getHeadrLine" to test the double json output problem
                     $CacheControl = $resp->getHeaderLine("X-Cache-Control") ?? "None";
                     switch ($CacheControl) {
                         case 'Set':

@@ -52,7 +52,6 @@ async function post() {
       if(!resp) {
           return {}
       }
-      console.log(await resp.text)
       return await resp.json();
       }
       catch(err) {

@@ -1,22 +1,101 @@
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { Atom } from "react-loading-indicators";
+
+import React from "react";
 /**
  * This component is not compulsory to used by all, something like /editprofile route page any how that gonna call the /api/profile so there may be a check , if not authenticated then redirected
  * @param {*} param0 
  * @returns 
+ * ["new_name","new_username","new_email","new_secondary_email","new_phone_number","new_bio"];
  */
+function updateProfile (data) {
+  let arr = Object.entries(data)
+  const [signature,setSignature] = useState([
+    false,
+    "Something went wrong"
+  ]);
+  const [filtered_resp,setFilterResp] = useState({
+      flag:'0',
+      message:"something went wrong",
+  })
+  let formData = new FormData()
+  arr.map((elem,index)=>{
+    console.log(elem,index)
+    if(index == "Name") {
+      formData.append("new_name",elem)
+    }
+    if(index == "Username") {
+      formData.append("new_username",elem)
+    }
+    if(index== "Email") {
+      formData.appened("new_email",elem)
+    }
+    if(index == "Bio") {
+      formData.append("new_bio",elem)
+    }
+    if(index == "Phone") {
+      formData.append("new_phone",elem)
+    }
+    if(index == "Secondary Email") {
+      formData.append("new_secondary_email",elem)
+    }
+  })
 
+  //2400,1702,1701,1205,1207,2501- redirect to sigin page or retry
+  // 1806,1300,1200,1000,1904,2100
+  if(arr.length > 0 ) {
+    try{
+      const res = await post(formData);
+    }
+    catch (err) {
+
+    }
+  }else {
+    // show modal as no changes
+  }
+
+  //end return signature state
+  return signature
+  
+}
+async function post (data) {
+  try {
+    const resp = await fetch(userprofileURLs().updateProfile,{
+      method:"POST",
+      body:data,
+      credentials:"include",
+    })
+    if(!resp) {
+      throw new Error("something went wrong");
+    }
+    let js;
+    try{
+      js = resp.json()
+    }catch(err) {
+      throw new Error("Parsing error")
+    }
+    
+  }catch (err) { //any technical errors
+    return {
+      ErrorCode:"2000",
+      message:"Something went wrong",
+    }
+  }
+}
 export function Userprofile ({children}) {
     const navigate = useNavigate();
     const [username,setUsername] = useState();
     const [isAuth,setAuth] = useState();
     const [isLoading,setLoading] = useState(true);
-
-    const filtered_resp = {
+    const [filtered_resp,setFilterResp] = useState({
         flag:'0',
         message:"something went wrong",
-    }
+    })
+    // const filtered_resp = {
+    //     flag:'0',
+    //     message:"something went wrong",
+    // }
     useEffect(()=>{
       const cookies = document.cookie.toString();
       const cookies_ = cookies.split(";");
@@ -45,14 +124,16 @@ export function Userprofile ({children}) {
           const data = {
             username:username,
           }
-          const res = await post(data);
+          const res = await Get(data);
       
           if(res?.flag == "1") {
             setAuth(true)
+            response_filter(res,filtered_resp)
+            console.log(filtered_resp)
           }else {
             //We having ErrorCodes so we have to handle authetication errors and http erros here (that's why i not used 401,403,500 in below)
             //other than 2000,2003 take them to signin page and (note : use signout or clearsessionn function later)
-            
+            console.log(res)
             if(res?.ErrorCode == "2000" || res?.ErrorCode == "2003") {
               navigate("/dashboard"); //as of now redirecting him to dashboard later take him inter server error page
             }else {
@@ -72,20 +153,35 @@ export function Userprofile ({children}) {
         }
       })()
     },[username,isAuth])
-
     if(isLoading) return <div className="flex w-full h-[80vh] items-center justify-center"><Atom color="#729a5a" size="medium" text="" textColor="" /></div>
     if(isAuth){
-      // return React.cloneElement(children,{name:"sriram"})
-      return <>{children}</>
+
+      const params = {
+        name: filtered_resp?.message?.name ?? "",
+        username:filtered_resp?.message?.username ?? "",
+        email:filtered_resp?.message?.email ??  filtered_resp?.message?.pending_email  ?? "",
+        phone:filtered_resp?.message.phone ?? iltered_resp?.message?.pending_phone ??"",
+        bio:filtered_resp?.message.bio ?? "",
+        onClick:{updateProfile}
+      }
+      return <>
+      {
+        React.Children.map(children,child=>{
+          let cl = React.cloneElement(child,{...params})
+          return cl
+          
+        })
+      }
+      </>
     }
 
 
 
 }
-async function post(data) {
+async function Get(data) {
     try {
       const query = new URLSearchParams(data);
-      const resp = await fetch(AuthURLs().authAPI+`?${query}`,{
+      const resp = await fetch(userprofileURLs().getUserInfo+`?${query}`,{
           method:"GET",
           credentials:"include",
        
@@ -129,18 +225,22 @@ function response_filter (resp,filtered_resp) {
     if(resp?.flag) {
         filtered_resp.flag = resp.flag
     }
-    if(resp?.message && typeof(resp?.message) == "object") {
-        response_filter(resp.message,filtered_resp)
-    }
-    if(resp?.message &&typeof(resp?.message) == "string" ) {
-        filtered_resp.message = resp.message
-    }
     if(resp?.ErrorCode){
-        filtered_resp.flag = resp.ErrorCode
+      filtered_resp.flag = resp.ErrorCode
     }
+    if(resp?.message && typeof(resp?.message) == "object") {
+      response_filter(resp.message,filtered_resp)
+    }else if(resp?.message &&typeof(resp?.message) == "string" ) {
+      filtered_resp.message = resp.message
+    }else {
+      filtered_resp.message = resp
+    }
+
 }
-function AuthURLs() {
+function userprofileURLs() {
     return {
-        authAPI:"http://localhost:8000/api/user/getUserInfo.api.php"
+        getUserInfo:"http://localhost:8000/api/user/getUserInfo.api.php",
+        updateProfile:"http://localhost:8000/api/user/updateprofile.api.php"
+
     }
 }
