@@ -20,7 +20,7 @@ export function Authorizer ({children}) {
       (async () => {
         try {
           const res = await post();
-          if(res.flag == "1") {
+          if(res?.flag == "1") {
             
             setAuth(true)
           }else {

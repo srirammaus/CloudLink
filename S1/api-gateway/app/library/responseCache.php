@@ -1,13 +1,17 @@
 <?php 
 namespace App\library;
+
 define("CACHE_PREFIX","apigateway:response_cache:");
 /**
  * This below should be extended as Middleware
  */
 use Clousre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Symfony\Component\HttpFoundation\Response;
+// use GuzzleHttp\Psr7\Response;
+
 
 
 class responseCache {
@@ -50,10 +54,15 @@ class responseCache {
             $session_caching_key = $this->request->cookie('sessionID') ?? NULL; //session id is the caching key
            
             //setting the cache only for those who having sessions
+                    Log::info("Reached..2");
             if($session_caching_key != NULL) {
                 $this->path_to_key = CACHE_PREFIX.$path.":".$session_caching_key;
-                if(method_exists($resp,'getContent') && method_exists($resp,"getHeadrLine")){ //remove the && method_exists($resp,"getHeadrLine" to test the double json output problem
-                    $CacheControl = $resp->getHeaderLine("X-Cache-Control") ?? "None";
+                    Log::info("Reached..");
+
+                if(method_exists($resp,'getContent')){ //remove the && method_exists($resp,"getHeadrLine" to test the double json output problem
+                    Log::info("Reached..3");
+                    $CacheControl = $resp->headers->get("X-Cache-Control") ?? "None";
+                    Log::info("Reached..4");
                     switch ($CacheControl) {
                         case 'Set':
                             # code...
@@ -98,10 +107,10 @@ class responseCache {
      * check if that in allowedcahcpaths and check the status code and check the custom header
      */
     public function setCache ($resp) {
-        // var_dump($resp->getHeaderLine("X-Cache-Control") ?? "NOT SET");
+        // var_dump($resp->headers->get("X-Cache-Control") ?? "NOT SET");
         if(!Redis::exists($this->path_to_key)   ){
             if($resp->getStatusCode()  == 200) {
-                $ttl = (int) $resp->getHeaderLine("X-Cache-TTL") ??600;
+                $ttl = (int) $resp->headers->get("X-Cache-TTL") ??600;
                 Redis::set($this->path_to_key,$resp->getContent());
                 Redis::expire($this->path_to_key,$ttl);
             }
@@ -121,7 +130,7 @@ class responseCache {
      */
     public function updateCache ($resp) {
         if($resp->getStatusCode() == 200) {
-            $ttl = (int) $resp->getHeaderLine("X-Cache-TTL") ??600;
+            $ttl = (int) $resp->headers->get("X-Cache-TTL") ??600;
             if(Redis::exists($this->path_to_key)){
                 Redis::set($this->path_to_key,$resp->getContent());
                 Redis::expire($this->path_to_key,$ttl);

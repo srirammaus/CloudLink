@@ -32,7 +32,6 @@ class authenticate {
         $username = Cookie::get("username");
         $session_id = Cookie::get("sessionID");
         $session_token = Cookie::get("sessionToken");
-
         if(!$session_id || !$session_token ||!$username) {
             throw new clientExceptionalHandler(ErrorCode:"1700",code:401);
         }

@@ -66,7 +66,7 @@ class updateProfile {
         $err = NULL;
         //vulgard word and len
         if($this->new_name != NULL) {
-            if(!$genLib->vulgarWordChecker($this->new_name) && strlen($this->new_name) < 15 ){
+            if(!$genLib->vulgerWordChecker($this->new_name) && strlen($this->new_name) < 15 ){
                 $this->update_data["name"] = $this->new_name;
 
             }else {
@@ -123,14 +123,14 @@ class updateProfile {
         }
         //vulgor and len
         if($this->new_bio != NULL) {
-            if(!$genLib->vulgarWordChecker($this->name) && strlen($this->new_name) < 50 ){
+            if(!$genLib->vulgerWordChecker($this->name) && strlen($this->new_name) < 50 ){
                 $this->update_data["bio"] = $this->new_bio;
             }else {
                 $err = "1806";
             }
         }
         if($err !=NULL) {
-            throw new clienException(ErrorCode:$err);
+            throw new \clientException(ErrorCode:$err);
         }
 
 
@@ -158,7 +158,6 @@ class updateProfile {
             }   
         }
         $query = "UPDATE users u JOIN sessions s ON s.session_token=:session_token AND s.username=:username  SET".$queryString." WHERE u.username=:username";
-        // echo $query;
         $conn = $this->getConn();
         $stmt = $conn->prepare($query);
 

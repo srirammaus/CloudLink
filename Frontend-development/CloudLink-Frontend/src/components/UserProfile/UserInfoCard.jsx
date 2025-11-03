@@ -4,6 +4,9 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useState } from "react";
+import { data, useNavigate } from "react-router";
+import Alert from "../ui/alert/Alert";
+import ComponentCard from "../common/ComponentCard";
 export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
     const [nameVal,setName] = useState(name)
     const [usernameVal,setUsername] = useState(username)
@@ -11,6 +14,10 @@ export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
     const [phoneVal,setPhone] = useState(phone)
     const [bioVal,setBio] = useState(bio)
     const [changed,setChange] = useState({})
+    const [updateStatus,setupdateStatus] = useState(false)
+    const [editErr,setEditErr] = useState()
+    const [refresh,setRefresh] = useState(0)
+    const navigate = useNavigate()
     function handlOnChange(e,index) {
       setEditable_personal_info((prev)=>{
           return prev.map((item,idx) => {
@@ -91,9 +98,31 @@ export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
 
    
     const { isOpen, openModal, closeModal } = useModal();
-    const handleSave = () => {
-        const signature = onClick.updateProfile(changed);
-        closeModal();
+    const handleSave = async (e) => {
+        e.preventDefault()
+        const filtered_resp = await onClick.updateProfile({data:changed,navigate:navigate});
+        if(filtered_resp?.flag =="1") {
+          //success modal seprate //for back up add a verification bade if that was default then make it show that
+          setupdateStatus(true);
+          let nextPg = document.getElementById("page-2");
+          let currentPg = document.getElementById("page-1");
+
+          currentPg.classList.add("hidden");
+          nextPg.classList.remove("hidden");
+          
+        }else {
+          let edit_err = document.getElementById("edit-err");
+          edit_err.classList.remove("hidden");
+          setEditErr(filtered_resp?.message ?? "Something went wrong!")
+
+        }
+
+
+        // else if(filtered_resp?.flag == "2") { //no changes applied // same modal pop that near save changes
+        // }else if(filtered_resp?.flag == "0") { //somehting went wrong modal // same modal pop that near save changes
+        // }else { // same modal pop that near save changes
+        // }
+        // closeModal();
     };
     return (<div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -160,8 +189,8 @@ export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
         </button>
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+      <Modal isOpen={isOpen} onClose={()=>{closeModal();if(updateStatus == true) navigate(0)}} className="max-w-[700px] m-4">
+        <div id="page-1" className="page-1 no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Edit Personal Information
@@ -224,6 +253,50 @@ export default function UserInfoCard({name,username,email,phone,bio,onClick}) {
               </Button>
               <Button size="sm" onClick={(e)=>{handleSave(e); console.log(changed)}}>
                 Save Changes
+              </Button>
+            </div>
+            <span id="edit-err" className="text-error-400 text-xs hidden">{editErr}</span>
+          </form>
+        </div>
+
+         <div id="page-2" className="page-2 no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 hidden">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                  Signup Status
+            </h4>
+          </div>
+        { updateStatus == true &&  (<ComponentCard title="Signup Successful
+">
+        <Alert
+          variant="success"
+          title="Update Successful"
+          message="Your profile has been updated successfully."
+          showLink={false}
+        />
+
+           {/* <Alert
+            variant="warning"
+            title="Warning Message"
+            message="Be cautious when performing this action."
+            showLink={false}
+          /> */}
+          </ComponentCard> )} 
+          { updateStatus ==false &&  (<ComponentCard title="Signup Failed">
+                <Alert
+            variant="error"
+            title="Update Error"
+            message="We couldn’t update your profile. Please try again later."
+            showLink={false}
+          />
+
+          </ComponentCard> )} 
+         
+       
+          <form className="flex flex-col items-center">
+
+            <div className="flex flex-col items-center gap-3 px-2 mt-10 lg:flex-row lg:justify-end w-full">
+              <Button size="sm" variant="outline" type="button" onClick={(e) =>{closeModal(); navigate(0)} }>
+                Profile
               </Button>
             </div>
           </form>

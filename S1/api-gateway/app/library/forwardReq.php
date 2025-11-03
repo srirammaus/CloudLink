@@ -37,6 +37,7 @@ class forwardReq
     protected $session = [];
     protected $localstorage =[];
     protected $auth;
+    protected $requestID;
 
     public function __construct () {
         

@@ -25,6 +25,8 @@ import UnifiedWeather from "./pages/service-tools/UnifiedWeather";
 import AccountSettings from "./pages/Account/AccountSettings";
 import ForgotPasswordPg from "./pages/AuthPages/ForgotPasswordPg";
 import {Authenticator} from "./library/Authenticator";
+import ResetPasswordPg from "./pages/AuthPages/ResetPasswordPg";
+import VerificationPg from "./pages/AuthPages/VerificationPg";
 export default function App() {
     return (<>
       <Router>
@@ -74,6 +76,8 @@ export default function App() {
           <Route path="/signin" element={<SignIn />}/>
           <Route path="/signup" element={<SignUp />}/>
           <Route path="/forgotpassword" element={<ForgotPasswordPg/>} />
+          <Route path="/resetpassword" element={<ResetPasswordPg/>}/>
+          <Route path="/passwordverification" element={<VerificationPg/>}/>
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />}/>

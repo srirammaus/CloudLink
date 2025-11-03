@@ -17,6 +17,7 @@ set_exception_handler (function(Throwable $e) {
         "ErrorCode"=> "2000",
         "message"=>"Unknown Error Occurred", 
     ];
+
     echo json_encode($packedMessage);
 
 }); 

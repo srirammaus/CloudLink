@@ -9,20 +9,15 @@ import React from "react";
  * @returns 
  * ["new_name","new_username","new_email","new_secondary_email","new_phone_number","new_bio"];
  */
-function updateProfile (data) {
+async function updateProfile ({data,navigate}) {
   let arr = Object.entries(data)
-  const [signature,setSignature] = useState([
-    false,
-    "Something went wrong"
-  ]);
-  const [filtered_resp,setFilterResp] = useState({
-      flag:'0',
-      message:"something went wrong",
-  })
+  
+ 
   let formData = new FormData()
-  arr.map((elem,index)=>{
-    console.log(elem,index)
+  arr.forEach(([index,elem])=>{
+    console.log(index,elem)
     if(index == "Name") {
+      console.log("this happen")
       formData.append("new_name",elem)
     }
     if(index == "Username") {
@@ -41,26 +36,62 @@ function updateProfile (data) {
       formData.append("new_secondary_email",elem)
     }
   })
-
+  const filtered_resp ={
+      flag:'0',
+      message:"something went wrong",
+  }
   //2400,1702,1701,1205,1207,2501- redirect to sigin page or retry
-  // 1806,1300,1200,1000,1904,2100
+  // 1806,1300,1200,1000,1904,2100,1805 
+  //2000,2003
   if(arr.length > 0 ) {
     try{
       const res = await post(formData);
+  
+      if(res?.flag == "1") {
+        response_filter(res,filtered_resp);
+        return filtered_resp
+
+      }else {
+        response_filter(res,filtered_resp);
+        const redirection_flag = ["2400","1702","1701","1205","1207","2501"]
+        const safeListedErrorCodes = ["1806","1300","1200","1000","1904","2100","1805" ]
+        const err_flag = filtered_resp?.flag;
+        console.log(res)
+
+        if(redirection_flag.includes(err_flag)){
+          //later clear the session too
+          
+          navigate("/")
+        }else if(safeListedErrorCodes.includes(err_flag)) {
+          return filtered_resp
+        }else {
+          //something went wrong
+          filtered_resp.flag = "0"
+          filtered_resp.message = "something went wrong"
+        }
+
+      }
     }
     catch (err) {
+        //sowmthing went wrong
+      console.log(err.message)
+      filtered_resp.flag = "0"
+      filtered_resp.message = "something went wrong"
 
     }
   }else {
     // show modal as no changes
+    filtered_resp.flag = "2"
+    filtered_resp.message = "No changes Applied"
   }
 
   //end return signature state
-  return signature
+  return filtered_resp
   
 }
-async function post (data) {
+async function post(data) {
   try {
+    console.log(data)
     const resp = await fetch(userprofileURLs().updateProfile,{
       method:"POST",
       body:data,
@@ -75,6 +106,7 @@ async function post (data) {
     }catch(err) {
       throw new Error("Parsing error")
     }
+    return js
     
   }catch (err) { //any technical errors
     return {
@@ -82,6 +114,7 @@ async function post (data) {
       message:"Something went wrong",
     }
   }
+  return
 }
 export function Userprofile ({children}) {
     const navigate = useNavigate();
